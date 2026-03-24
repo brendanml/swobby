@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils"
-import type { ChatMessage } from "@/hooks/use-realtime-chat"
+import { cn } from "~/lib/utils"
+import type { ChatMessage } from "~/hooks/use-realtime-chat"
 
 interface ChatMessageItemProps {
     message: ChatMessage
@@ -27,11 +27,11 @@ export const ChatMessageItem = ({
                             "justify-end flex-row-reverse": isOwnMessage,
                         })}
                     >
-                        <span className={"font-medium"}>
-                            {message.user.name}
+                        <span className="font-medium">
+                            {message.sender_name}
                         </span>
                         <span className="text-foreground/50 text-xs">
-                            {new Date(message.createdAt).toLocaleTimeString(
+                            {new Date(message.created_at).toLocaleTimeString(
                                 "en-US",
                                 {
                                     hour: "2-digit",

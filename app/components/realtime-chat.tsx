@@ -1,131 +1,160 @@
-"use client"
+import { Send, ArrowLeft, MessageCircle } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { cn } from "~/lib/utils"
+import { ChatMessageItem } from "~/components/chat-message"
+import { ExchangeCard } from "~/components/exchange-card"
+import { useRealtimeChat } from "~/hooks/use-realtime-chat"
+import { Button } from "~/components/ui/button"
+import { Input } from "~/components/ui/input"
+import { UserProfile } from "~/components/user-profile"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "~/components/ui/popover"
+import { Sheet, SheetContent } from "~/components/ui/sheet"
+import ConversationList from "~/components/messages/conversation-list"
+import { findOrCreateConversation } from "~/adapters/messages"
+import { useUser } from "~/context/user"
+import { useMessages } from "~/context/messages"
+import { useIsMobile } from "~/hooks/use-mobile"
 
-import { Send } from "lucide-react"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
-import { cn } from "@/lib/utils"
-import { ChatMessageItem } from "@/components/chat-message"
-import { useChatScroll } from "@/hooks/use-chat-scroll"
-import { useRealtimeChat, type ChatMessage } from "@/hooks/use-realtime-chat"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-
-import { supabase } from "~/lib/supabase/client"
-
-interface RealtimeChatProps {
-    roomName: string
-    username: string
-    onMessage?: (messages: ChatMessage[]) => void
-    messages?: ChatMessage[]
+type ConversationInfo = {
+    id: string
+    otherUser: { id: string; name: string | null; distanceKm?: number }
 }
 
-/**
- * Realtime chat component
- * @param roomName - The name of the room to join. Each room is a unique chat.
- * @param username - The username of the user
- * @param onMessage - The callback function to handle the messages. Useful if you want to store the messages in a database.
- * @param messages - The messages to display in the chat. Useful if you want to display messages from a database.
- * @returns The chat component
- */
-export const RealtimeChat = ({
-    roomName,
-    username,
-    onMessage,
-    messages: initialMessages = [],
-}: RealtimeChatProps) => {
-    const { containerRef, scrollToBottom } = useChatScroll()
+// --- Conversation ---
 
+interface ConversationProps {
+    conversation: ConversationInfo
+    currentUserId: string
+    senderName: string
+    onBack: () => void
+}
+
+function Conversation({
+    conversation,
+    currentUserId,
+    senderName,
+    onBack,
+}: ConversationProps) {
+    const containerRef = useRef<HTMLDivElement>(null)
     const {
-        messages: realtimeMessages,
+        messages,
+        loading,
         sendMessage,
         isConnected,
+        updateExchangeStatus,
     } = useRealtimeChat({
-        roomName,
-        username,
+        conversationId: conversation.id,
+        currentUserId,
+        senderName,
     })
     const [newMessage, setNewMessage] = useState("")
 
-    // Merge realtime messages with initial messages
-    const allMessages = useMemo(() => {
-        const mergedMessages = [...initialMessages, ...realtimeMessages]
-        // Remove duplicates based on message id
-        const uniqueMessages = mergedMessages.filter(
-            (message, index, self) =>
-                index === self.findIndex((m) => m.id === message.id),
-        )
-        // Sort by creation date
-        const sortedMessages = uniqueMessages.sort((a, b) =>
-            a.createdAt.localeCompare(b.createdAt),
-        )
-
-        return sortedMessages
-    }, [initialMessages, realtimeMessages])
+    const inputRef = useCallback((node: HTMLInputElement | null) => {
+        if (node) node.focus()
+    }, [])
 
     useEffect(() => {
-        if (onMessage) {
-            onMessage(allMessages)
-        }
-    }, [allMessages, onMessage])
+        if (!containerRef.current) return
+        containerRef.current.scrollTo({
+            top: containerRef.current.scrollHeight,
+            behavior: "smooth",
+        })
+    }, [messages])
 
-    useEffect(() => {
-        // Scroll to bottom whenever messages change
-        scrollToBottom()
-    }, [allMessages, scrollToBottom])
-
-    const handleSendMessage = useCallback(
-        (e: React.FormEvent) => {
+    const handleSend = useCallback(
+        (e: React.SyntheticEvent) => {
             e.preventDefault()
             if (!newMessage.trim() || !isConnected) return
-
             sendMessage(newMessage)
             setNewMessage("")
         },
         [newMessage, isConnected, sendMessage],
     )
 
+    const { otherUser } = conversation
+
     return (
-        <div className="flex flex-col h-full w-full bg-background text-foreground antialiased">
-            {/* Messages */}
+        <div className="flex flex-col h-full">
+            <div className="flex items-center gap-1 px-2 py-2 border-b border-border shrink-0">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={onBack}
+                >
+                    <ArrowLeft className="size-4" />
+                </Button>
+                <UserProfile
+                    id={otherUser.id}
+                    name={otherUser.name}
+                    subtitle={
+                        otherUser.distanceKm !== undefined
+                            ? `${Math.max(1, Math.round(otherUser.distanceKm))} km`
+                            : undefined
+                    }
+                />
+            </div>
+
             <div
                 ref={containerRef}
-                className="flex-1 overflow-y-auto p-4 space-y-4"
+                className="flex-1 overflow-y-auto p-4 space-y-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
             >
-                {allMessages.length === 0 ? (
+                {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-muted-foreground border-t-transparent" />
+                    </div>
+                ) : messages.length === 0 ? (
                     <div className="text-center text-sm text-muted-foreground">
                         No messages yet. Start the conversation!
                     </div>
                 ) : null}
-                <div className="space-y-1">
-                    {allMessages.map((message, index) => {
-                        const prevMessage =
-                            index > 0 ? allMessages[index - 1] : null
-                        const showHeader =
-                            !prevMessage ||
-                            prevMessage.user.name !== message.user.name
 
-                        return (
-                            <div
-                                key={message.id}
-                                className="animate-in fade-in slide-in-from-bottom-4 duration-300"
-                            >
-                                <ChatMessageItem
-                                    message={message}
-                                    isOwnMessage={
-                                        message.user.name === username
-                                    }
-                                    showHeader={showHeader}
-                                />
-                            </div>
-                        )
-                    })}
-                </div>
+                {messages.map((message, index) => {
+                    const prev = index > 0 ? messages[index - 1] : null
+                    const showHeader =
+                        !prev || prev.sender_id !== message.sender_id
+                    const isOwn = message.sender_id === currentUserId
+                    return (
+                        <div
+                            key={message.id}
+                            className="animate-in fade-in slide-in-from-bottom-4 duration-300"
+                        >
+                            <ChatMessageItem
+                                message={message}
+                                isOwnMessage={isOwn}
+                                showHeader={showHeader}
+                            />
+                            {message.offer && (
+                                <div
+                                    className={`flex mt-1 ${isOwn ? "justify-end" : "justify-start"}`}
+                                >
+                                    <div className="max-w-[85%] w-full">
+                                        <ExchangeCard
+                                            offer={message.offer}
+                                            currentUserId={currentUserId}
+                                            otherUserId={otherUser.id}
+                                            otherUserName={otherUser.name}
+                                            isOwn={isOwn}
+                                            onStatusChange={updateExchangeStatus}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )
+                })}
             </div>
 
             <form
-                onSubmit={handleSendMessage}
-                className="flex w-full gap-2 border-t border-border p-4"
+                onSubmit={handleSend}
+                className="flex w-full gap-2 border-t border-border p-3 shrink-0"
             >
                 <Input
+                    ref={inputRef}
                     className={cn(
                         "rounded-full bg-background text-sm transition-all duration-300",
                         isConnected && newMessage.trim()
@@ -136,18 +165,162 @@ export const RealtimeChat = ({
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    disabled={!isConnected}
                 />
                 {isConnected && newMessage.trim() && (
                     <Button
-                        className="aspect-square rounded-full animate-in fade-in slide-in-from-right-4 duration-300"
+                        className="aspect-square rounded-full animate-in fade-in slide-in-from-right-4 duration-300 border-2 border-primary-bold"
                         type="submit"
-                        disabled={!isConnected}
                     >
                         <Send className="size-4" />
                     </Button>
                 )}
             </form>
+        </div>
+    )
+}
+
+interface RealtimeChatProps {
+    variant: "floating" | "page"
+}
+
+export function RealtimeChat({ variant }: RealtimeChatProps) {
+    const { user } = useUser()
+    const { messageUser, closeMessage } = useMessages()
+    const isMobile = useIsMobile()
+    const [activeConversation, setActiveConversation] =
+        useState<ConversationInfo | null>(null)
+    const [open, setOpen] = useState(false)
+
+    // Open a conversation when messageUser is set externally (e.g. "Message" button on profile)
+    useEffect(() => {
+        if (!messageUser || !user?.id || variant !== "floating") return
+        findOrCreateConversation(user.id, messageUser.id).then(
+            (conversationId) => {
+                setActiveConversation({
+                    id: conversationId,
+                    otherUser: {
+                        id: messageUser.id,
+                        name: messageUser.name,
+                        distanceKm: messageUser.distanceKm,
+                    },
+                })
+                setOpen(true)
+            },
+        )
+    }, [messageUser, user?.id, variant])
+
+    if (!user?.id) return null
+
+    const handleSelect = ({
+        conversationId,
+        otherUserId,
+        name,
+    }: {
+        conversationId: string
+        otherUserId: string
+        name: string
+    }) =>
+        setActiveConversation({
+            id: conversationId,
+            otherUser: { id: otherUserId, name },
+        })
+
+    if (variant === "floating") {
+        const sheetContent = activeConversation ? (
+            <Conversation
+                conversation={activeConversation}
+                currentUserId={user.id}
+                senderName={user.name ?? "Anonymous"}
+                onBack={() => setActiveConversation(null)}
+            />
+        ) : (
+            <div className="p-2">
+                <ConversationList
+                    onSelect={handleSelect}
+                />
+            </div>
+        )
+
+        if (isMobile) {
+            return (
+                <>
+                    <button
+                        className="p-3 rounded-full bg-primary shadow-md hover:cursor-pointer"
+                        onClick={() => setOpen(true)}
+                    >
+                        <MessageCircle
+                            className="size-7 text-primary-foreground"
+                            strokeWidth={1.5}
+                        />
+                    </button>
+                    <Sheet
+                        open={open}
+                        onOpenChange={(next) => {
+                            setOpen(next)
+                            if (!next) {
+                                setActiveConversation(null)
+                                closeMessage()
+                            }
+                        }}
+                    >
+                        <SheetContent
+                            side="bottom"
+                            className="h-[80vh]! p-0 rounded-xl"
+                            showCloseButton={false}
+                        >
+                            {sheetContent}
+                        </SheetContent>
+                    </Sheet>
+                </>
+            )
+        }
+
+        return (
+            <Popover
+                open={open}
+                onOpenChange={(next) => {
+                    setOpen(next)
+                    if (!next) {
+                        setActiveConversation(null)
+                        closeMessage()
+                    }
+                }}
+            >
+                <PopoverTrigger className="p-3 rounded-full bg-primary shadow-md hover:cursor-pointer">
+                    <MessageCircle
+                        className="size-7 text-primary-foreground"
+                        strokeWidth={1.5}
+                    />
+                </PopoverTrigger>
+                <PopoverContent className="h-150 w-100 p-0">
+                    {sheetContent}
+                </PopoverContent>
+            </Popover>
+        )
+    }
+
+    return (
+        <div className="flex h-full w-full overflow-hidden">
+            <div className="w-64 shrink-0 border-r border-border overflow-y-auto p-2">
+                <ConversationList
+                    onSelect={handleSelect}
+                    activeConversationId={activeConversation?.id ?? undefined}
+                />
+            </div>
+            <div className="flex-1 min-w-0">
+                {activeConversation ? (
+                    <Conversation
+                        conversation={activeConversation}
+                        currentUserId={user.id}
+                        senderName={user.name ?? "Anonymous"}
+                        onBack={() => setActiveConversation(null)}
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                        Select a conversation
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

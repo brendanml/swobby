@@ -5,8 +5,14 @@ import {
     Outlet,
     Scripts,
     ScrollRestoration,
+    useLocation,
 } from "react-router"
 import { AuthProvider } from "./context/auth"
+import { UserProvider } from "./context/user"
+import { MessagesProvider } from "./context/messages"
+import { OfferProvider } from "./context/offer"
+import { RealtimeChat } from "./components/realtime-chat"
+import { useMessagePopover } from "./hooks/use-message-popover"
 
 import type { Route } from "./+types/root"
 import "./app.css"
@@ -20,7 +26,7 @@ export const links: Route.LinksFunction = () => [
     },
     {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap",
     },
 ]
 
@@ -37,7 +43,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Links />
             </head>
             <body>
-                <AuthProvider>{children}</AuthProvider>
+                <AuthProvider>
+                    <UserProvider>
+                        <OfferProvider>
+                            <MessagesProvider>{children}</MessagesProvider>
+                        </OfferProvider>
+                    </UserProvider>
+                </AuthProvider>
                 <ScrollRestoration />
                 <Scripts />
             </body>
@@ -46,7 +58,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-    return <Outlet />
+    const showPopover = useMessagePopover()
+
+    return (
+        <>
+            <Outlet />
+            {showPopover && (
+                <div className="fixed bottom-0 right-0 p-4">
+                    <RealtimeChat variant="floating" />
+                </div>
+            )}
+        </>
+    )
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
