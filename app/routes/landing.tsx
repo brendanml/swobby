@@ -3,7 +3,6 @@ import { APP_NAME } from "~/utils/config"
 import { GoogleSignInButton } from "~/components/google-sign-in-button"
 import { Button } from "~/components/ui/button"
 import { useAuth } from "~/context/auth"
-import { useEffect } from "react"
 import { Compass } from "lucide-react"
 
 function GeometricBackground() {
@@ -87,12 +86,8 @@ function GeometricBackground() {
 }
 
 export default function LandingPage() {
-    const { session, signIn } = useAuth()
+    const { signIn } = useAuth()
     const navigate = useNavigate()
-
-    useEffect(() => {
-        if (session) navigate("/explore")
-    }, [session, navigate])
 
     return (
         <div className="relative flex min-h-screen items-center justify-center bg-background text-foreground overflow-hidden">

@@ -1,19 +1,27 @@
-import { useState, useEffect, useRef } from "react"
-import { MapContainer, TileLayer, Marker, Circle, useMapEvents, useMap } from "react-leaflet"
+import { useEffect } from "react"
+import {
+    MapContainer,
+    TileLayer,
+    Marker,
+    Circle,
+    useMapEvents,
+    useMap,
+} from "react-leaflet"
 import type { LeafletMouseEvent } from "leaflet"
 import "leaflet/dist/leaflet.css"
+import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps"
 
-interface NominatimResult {
-    lat: string
-    lon: string
-    display_name: string
-}
+const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API as string
 
-function ClickHandler({ onChange }: { onChange: (lat: number, lng: number) => void }) {
+function ClickHandler({
+    onChange,
+}: {
+    onChange: (lat: number, lng: number) => void
+}) {
     useMapEvents({
         click(e: LeafletMouseEvent) {
             onChange(e.latlng.lat, e.latlng.lng)
-        }
+        },
     })
     return null
 }
@@ -21,78 +29,90 @@ function ClickHandler({ onChange }: { onChange: (lat: number, lng: number) => vo
 function MapFlyTo({ lat, lng }: { lat: number; lng: number }) {
     const map = useMap()
     useEffect(() => {
-        map.flyTo([lat, lng], map.getZoom())
+        map.flyTo([lat, lng], map.getZoom(), { animate: true, duration: 1.5 })
     }, [lat, lng])
     return null
 }
 
-export default function LocationPicker({ lat, lng, radiusKm, onChange }: {
-    lat: number
-    lng: number
-    radiusKm?: number
-    onChange: (lat: number, lng: number) => void
+function PlaceAutocomplete({
+    onSelect,
+    initialValue,
+}: {
+    onSelect: (lat: number, lng: number, address: string) => void
+    initialValue?: string
 }) {
-    const [query, setQuery] = useState("")
-    const [results, setResults] = useState<NominatimResult[]>([])
-    const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const places = useMapsLibrary("places")
 
-    function handleInput(e: React.ChangeEvent<HTMLInputElement>) {
-        const value = e.target.value
-        setQuery(value)
-        if (timer.current) clearTimeout(timer.current)
-        if (!value) return setResults([])
-        timer.current = setTimeout(async () => {
-            const res = await fetch(
-                `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5`,
-                { headers: { "Accept-Language": "en" } }
-            )
-            setResults(await res.json())
-        }, 400)
-    }
-
-    function handleSelect(result: NominatimResult) {
-        onChange(Number(result.lat), Number(result.lon))
-        setQuery(result.display_name)
-        setResults([])
-    }
+    useEffect(() => {
+        if (!places) return
+        const input = document.getElementById(
+            "place-autocomplete-input",
+        ) as HTMLInputElement
+        if (!input) return
+        const autocomplete = new places.Autocomplete(input, {
+            fields: ["geometry", "formatted_address"],
+        })
+        autocomplete.addListener("place_changed", () => {
+            const place = autocomplete.getPlace()
+            const loc = place.geometry?.location
+            if (!loc) return
+            onSelect(loc.lat(), loc.lng(), place.formatted_address ?? "")
+            input.value = place.formatted_address ?? ""
+        })
+    }, [places])
 
     return (
+        <input
+            id="place-autocomplete-input"
+            defaultValue={initialValue}
+            placeholder="Search for a location..."
+            className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
+    )
+}
+
+export default function LocationPicker({
+    lat,
+    lng,
+    address,
+    radiusKm,
+    onChange,
+}: {
+    lat: number
+    lng: number
+    address?: string
+    radiusKm?: number
+    onChange: (lat: number, lng: number, address: string) => void
+}) {
+    return (
         <div className="flex flex-col gap-2">
-            <div className="relative">
-                <input
-                    value={query}
-                    onChange={handleInput}
-                    placeholder="Search address..."
-                    className="w-full"
-                />
-                {results.length > 0 && (
-                    <ul className="absolute z-[1000] w-full bg-background border rounded shadow mt-1 max-h-48 overflow-y-auto">
-                        {results.map((r) => (
-                            <li
-                                key={r.display_name}
-                                onClick={() => handleSelect(r)}
-                                className="px-3 py-2 cursor-pointer hover:bg-muted text-sm"
-                            >
-                                {r.display_name}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
-            <div className="h-64 rounded overflow-hidden isolate">
-                <MapContainer center={[lat, lng]} zoom={11} style={{ height: "100%", width: "100%" }}>
+            <APIProvider apiKey={GOOGLE_API_KEY} libraries={["places"]}>
+                <PlaceAutocomplete onSelect={onChange} initialValue={address} />
+            </APIProvider>
+
+            <div className="h-64 rounded-lg overflow-hidden isolate">
+                <MapContainer
+                    center={[lat, lng]}
+                    zoom={11}
+                    style={{ height: "100%", width: "100%" }}
+                >
                     <TileLayer
                         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                         attribution=""
                     />
-                    <ClickHandler onChange={onChange} />
+                    <ClickHandler onChange={(la, ln) => onChange(la, ln, "")} />
                     <MapFlyTo lat={lat} lng={lng} />
                     <Marker position={[lat, lng]} />
                     {radiusKm && (
                         <Circle
                             center={[lat, lng]}
                             radius={radiusKm * 1000}
-                            pathOptions={{ color: "blue", fillColor: "blue", fillOpacity: 0.08, weight: 1.5 }}
+                            pathOptions={{
+                                color: "blue",
+                                fillColor: "blue",
+                                fillOpacity: 0.08,
+                                weight: 1.5,
+                            }}
                         />
                     )}
                 </MapContainer>

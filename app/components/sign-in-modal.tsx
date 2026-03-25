@@ -8,7 +8,7 @@ import {
     DialogFooter,
 } from "~/components/ui/dialog"
 import { Button } from "~/components/ui/button"
-import { APP_NAME } from "~/utils/config"
+import { AppName } from "~/components/app-name"
 
 interface SignInModalProps {
     open: boolean
@@ -22,8 +22,8 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
         <Dialog open={open} onOpenChange={(next) => { if (!next) onClose() }}>
             <DialogContent showCloseButton={false} className="text-center items-center">
                 <DialogHeader className="items-center">
-                    <DialogTitle className="font-[--font-display] text-2xl font-semibold tracking-tighter">
-                        {APP_NAME}
+                    <DialogTitle asChild>
+                        <AppName />
                     </DialogTitle>
                     <DialogDescription>
                         Sign in to access this page.

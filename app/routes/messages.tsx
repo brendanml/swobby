@@ -1,12 +1,9 @@
-import { Page } from "~/components/page"
-import { RealtimeChat } from "~/components/realtime-chat"
+import { RealtimeChat } from "~/components/chat/realtime"
 
 export default function MessagesPage() {
     return (
-        <Page className="p-0 overflow-hidden">
-            <div className="h-[calc(100vh-var(--nav-height))] w-full max-w-4xl">
-                <RealtimeChat variant="page" />
-            </div>
-        </Page>
+        <div className="h-full w-full overflow-hidden">
+            <RealtimeChat variant="page" />
+        </div>
     )
 }

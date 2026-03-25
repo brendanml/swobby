@@ -20,13 +20,48 @@ export type NearbyBook = {
     distanceKm: number
 }
 
-export async function findNearbyBooks(userId: string): Promise<NearbyBook[]> {
+export async function findNearbyBooks(userId: string, blockedUserIds: string[] = []): Promise<NearbyBook[]> {
     const nearby = await findNearby(userId)
+    if (!nearby.length) return []
+
+    const blockedSet = new Set(blockedUserIds)
+    const filtered = nearby.filter((u) => !blockedSet.has(u.id))
+    const distanceMap = new Map(filtered.map((u) => [u.id, u.distanceKm]))
+    const nameMap = new Map(filtered.map((u) => [u.id, u.name]))
+    const nearbyIds = filtered.map((u) => u.id)
+    const { data } = await supabase
+        .from("listings")
+        .select("id, user_id, books(work_id, title, cover_url, author_name)")
+        .in("user_id", nearbyIds)
+
+    return (data ?? []).flatMap((row: any) => {
+        const book = row.books
+        if (!book) return []
+        return [{ listingId: row.id, work_id: book.work_id, title: book.title, cover_url: book.cover_url, author_name: book.author_name, userId: row.user_id, userName: nameMap.get(row.user_id) ?? null, distanceKm: distanceMap.get(row.user_id) ?? 0 }]
+    })
+}
+
+export async function findNearbyBooksForGuest(lat: number, lng: number, blockedUserIds: string[] = []): Promise<NearbyBook[]> {
+    const origin = latLngToH3(lat, lng)
+    const myCells = new Set(gridDisk(origin, DEFAULT_K_RING))
+    const blockedSet = new Set(blockedUserIds)
+
+    const { data: candidates } = await supabase
+        .from("profiles")
+        .select("id, name, lat, lng, h3_index")
+
+    if (!candidates) return []
+
+    const nearby = candidates
+        .filter((c) => c.h3_index && myCells.has(c.h3_index) && !blockedSet.has(c.id))
+        .map((c) => ({ ...c, distanceKm: Math.max(1, gridDistance(origin, c.h3_index!) * 1.22) }))
+
     if (!nearby.length) return []
 
     const distanceMap = new Map(nearby.map((u) => [u.id, u.distanceKm]))
     const nameMap = new Map(nearby.map((u) => [u.id, u.name]))
     const nearbyIds = nearby.map((u) => u.id)
+
     const { data } = await supabase
         .from("listings")
         .select("id, user_id, books(work_id, title, cover_url, author_name)")

@@ -16,25 +16,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState<boolean>(true)
 
     useEffect(() => {
-        supabase.auth
-            .getSession()
-            .then(({ data: { session } }) => setSession(session))
-
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session)
+            setLoading(false)
         })
-
         return () => subscription.unsubscribe()
     }, [])
 
     const signIn = async () => {
-        await supabase.auth.signInWithOAuth({ provider: "google" })
+        await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: { redirectTo: `${window.location.origin}/explore` },
+        })
     }
 
     const signOut = async () => {
-        const { error } = await supabase.auth.signOut()
+        await supabase.auth.signOut()
     }
 
     return (

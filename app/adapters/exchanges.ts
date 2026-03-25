@@ -9,18 +9,15 @@ export type ExchangeSummary = {
 }
 
 export async function getExchangesByUser(supabase: SupabaseClient, userId: string): Promise<ExchangeSummary[]> {
-    // Get all conversation IDs the user is part of
-    const { data: convos, error: convosError } = await supabase
+    const { data: convos } = await supabase
         .from("conversations")
         .select("id")
         .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
 
-    console.log("[exchanges] convos:", convos, convosError)
-
     const convoIds = (convos ?? []).map((c) => c.id)
     if (convoIds.length === 0) return []
 
-    const { data, error: exchangesError } = await supabase
+    const { data } = await supabase
         .from("exchanges")
         .select(`id, status, created_at, accepted_offer_id, initiator_id,
             offers!offers_exchange_id_fkey(id, proposer_id,
@@ -29,18 +26,14 @@ export async function getExchangesByUser(supabase: SupabaseClient, userId: strin
         .in("conversation_id", convoIds)
         .order("created_at", { ascending: false })
 
-    console.log("[exchanges] data:", data, exchangesError)
-
     return (data ?? []).map((ex: any) => {
         const offers = (ex.offers ?? []) as any[]
-        const displayOffer =
-            offers.find((o: any) => o.id === ex.accepted_offer_id) ?? offers[0]
+        const displayOffer = offers.find((o: any) => o.id === ex.accepted_offer_id) ?? offers[0]
         const books = (displayOffer?.offer_items ?? [])
-            .map((item: any) => item.listings?.books)
+            .map((item: any) => item.listings.books)
             .filter(Boolean)
         const otherUserName =
-            offers.find((o: any) => o.proposer_id !== userId)?.proposer?.name ??
-            null
+            offers.find((o: any) => o.proposer_id !== userId)?.proposer?.name ?? null
         return { id: ex.id, status: ex.status, created_at: ex.created_at, otherUserName, books }
     })
 }
@@ -59,7 +52,7 @@ export type OfferItem = {
     listings: {
         id: string
         books: { title: string; cover_url: string | null; author_name: string | null } | null
-    } | null
+    }
 }
 
 export type Offer = {

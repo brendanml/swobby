@@ -17,7 +17,7 @@ export type SwapMatch = {
     theyHaveIWant: Book[]
 }
 
-export async function findSwaps(userId: string): Promise<SwapMatch[]> {
+export async function findSwaps(userId: string, blockedUserIds: string[] = []): Promise<SwapMatch[]> {
     // Round 1: get my profile, listings, and wants in parallel
     const [
         { data: me },
@@ -25,7 +25,7 @@ export async function findSwaps(userId: string): Promise<SwapMatch[]> {
         { data: myWants },
     ] = await Promise.all([
         supabase.from("profiles").select("lat, lng, h3_index").eq("id", userId).single(),
-        supabase.from("listings").select("work_id, books(work_id, title, cover_url, author_name)").eq("user_id", userId),
+        supabase.from("listings").select("work_id, books(work_id, title, cover_url, author_name)").eq("user_id", userId).eq("status", "available"),
         supabase.from("wants").select("work_id").eq("user_id", userId),
     ])
 
@@ -36,34 +36,45 @@ export async function findSwaps(userId: string): Promise<SwapMatch[]> {
 
     if (!myListingIds.length && !myWantIds.size) return []
 
-    // Round 2: find users with book overlap, include their location info
+    // Round 2: find users with book overlap (no embedded profile join)
     const [{ data: theyWantMine }, { data: theyHaveMine }] = await Promise.all([
         myListingIds.length
-            ? supabase.from("wants").select("user_id, work_id, profiles(id, name, h3_index)").in("work_id", myListingIds).neq("user_id", userId)
+            ? supabase.from("wants").select("user_id, work_id").in("work_id", myListingIds).neq("user_id", userId)
             : Promise.resolve({ data: [] }),
         myWantIds.size
-            ? supabase.from("listings").select("user_id, work_id, books(work_id, title, cover_url, author_name), profiles(id, name, h3_index)").in("work_id", [...myWantIds]).neq("user_id", userId)
+            ? supabase.from("listings").select("user_id, work_id, books(work_id, title, cover_url, author_name)").in("work_id", [...myWantIds]).neq("user_id", userId).eq("status", "available")
             : Promise.resolve({ data: [] }),
     ])
 
-    // Collect all candidate users with their profile
-    const candidateMap = new Map<string, { id: string; name: string | null; h3_index: string }>()
+    const blockedSet = new Set(blockedUserIds)
+
+    // Collect all candidate user IDs
+    const candidateUserIds = new Set<string>()
     for (const row of [...(theyWantMine ?? []), ...(theyHaveMine ?? [])]) {
-        const p = row.profiles as any
-        if (p?.h3_index && !candidateMap.has(p.id)) {
-            candidateMap.set(p.id, p)
-        }
+        if (!blockedSet.has(row.user_id)) candidateUserIds.add(row.user_id)
     }
 
-    // Mutual distance filter
+    if (!candidateUserIds.size) return []
+
+    // Round 3: fetch profiles for all candidates in one query
+    const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, name, h3_index")
+        .in("id", [...candidateUserIds])
+
     const origin = me.h3_index
     const myCells = new Set(gridDisk(origin, DEFAULT_K_RING))
 
+    const candidateMap = new Map<string, { id: string; name: string | null; h3_index: string }>()
+    for (const p of (profiles ?? [])) {
+        if (p.h3_index) candidateMap.set(p.id, p as any)
+    }
+
+    // Mutual distance filter
     const mutualIds = new Set(
         [...candidateMap.values()].filter((c) => {
             if (!myCells.has(c.h3_index)) return false
-            const theirCells = gridDisk(c.h3_index, DEFAULT_K_RING)
-            return theirCells.includes(origin)
+            return gridDisk(c.h3_index, DEFAULT_K_RING).includes(origin)
         }).map((c) => c.id)
     )
 

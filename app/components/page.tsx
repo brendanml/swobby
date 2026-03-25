@@ -11,7 +11,7 @@ export function Page({
     return (
         <div
             className={cn(
-                "grid grid-cols-12 gap-6 overflow-y-auto scrollbar-none h-full p-4",
+                "grid grid-cols-12 gap-6 overflow-y-auto scrollbar-none h-full md:p-8 p-1",
                 className,
             )}
         >

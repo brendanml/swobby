@@ -27,18 +27,18 @@ export async function createListing(supabase: SupabaseClient, { userId, workId, 
     return supabase.from("listings").insert({ work_id: workId, user_id: userId, condition, description })
 }
 
-export async function createWant(supabase: SupabaseClient, { userId, workId, condition }: {
+export async function createWant(supabase: SupabaseClient, { userId, workId }: {
     userId: string
     workId: string
-    condition: string
 }) {
-    return supabase.from("wants").insert({ user_id: userId, work_id: workId, condition })
+    return supabase.from("wants").insert({ user_id: userId, work_id: workId })
 }
 
 export type Listing = {
     id: string
     condition: string
     description: string | null
+    status: string
     books: {
         work_id: string
         title: string
@@ -50,14 +50,13 @@ export type Listing = {
 export async function getListingsByUser(supabase: SupabaseClient, userId: string): Promise<Listing[]> {
     const { data } = await supabase
         .from("listings")
-        .select("id, condition, description, books(work_id, title, author_name, cover_url)")
+        .select("id, condition, description, status, books(work_id, title, author_name, cover_url)")
         .eq("user_id", userId)
     return (data as unknown as Listing[]) ?? []
 }
 
 export type Want = {
     id: string
-    condition: string
     books: {
         title: string
         author_name: string | null
@@ -68,7 +67,7 @@ export type Want = {
 export async function getWantsByUser(supabase: SupabaseClient, userId: string): Promise<Want[]> {
     const { data } = await supabase
         .from("wants")
-        .select("id, condition, books(title, author_name, cover_url)")
+        .select("id, books(title, author_name, cover_url)")
         .eq("user_id", userId)
     return (data as unknown as Want[]) ?? []
 }
@@ -97,10 +96,23 @@ export async function getListingDetail(supabase: SupabaseClient, id: string): Pr
 export async function getListingById(supabase: SupabaseClient, id: string): Promise<Listing | null> {
     const { data } = await supabase
         .from("listings")
-        .select("id, condition, description, books(work_id, title, author_name, cover_url)")
+        .select("id, condition, description, status, books(work_id, title, author_name, cover_url)")
         .eq("id", id)
         .single()
     return (data as unknown as Listing) ?? null
+}
+
+export async function getListingWorkIdsByUser(supabase: SupabaseClient, userId: string): Promise<string[]> {
+    const { data } = await supabase
+        .from("listings")
+        .select("books(work_id)")
+        .eq("user_id", userId)
+    if (!data) return []
+    return (data as any[]).map((r) => r.books?.work_id).filter(Boolean)
+}
+
+export async function updateListingStatuses(supabase: SupabaseClient, ids: string[], status: string) {
+    return supabase.from("listings").update({ status }).in("id", ids)
 }
 
 export async function updateListing(supabase: SupabaseClient, id: string, { condition, description }: {
@@ -113,14 +125,10 @@ export async function updateListing(supabase: SupabaseClient, id: string, { cond
 export async function getWantById(supabase: SupabaseClient, id: string): Promise<Want | null> {
     const { data } = await supabase
         .from("wants")
-        .select("id, condition, books(title, author_name, cover_url)")
+        .select("id, books(title, author_name, cover_url)")
         .eq("id", id)
         .single()
     return (data as unknown as Want) ?? null
-}
-
-export async function updateWant(supabase: SupabaseClient, id: string, { condition }: { condition: string }) {
-    return supabase.from("wants").update({ condition }).eq("id", id)
 }
 
 export async function deleteListing(supabase: SupabaseClient, id: string) {

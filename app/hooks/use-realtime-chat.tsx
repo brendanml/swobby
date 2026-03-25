@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { supabase } from "~/lib/supabase/client"
 
 interface UseRealtimeChatProps {
@@ -12,14 +12,15 @@ type OfferItem = {
     listings: {
         id: string
         books: { title: string; cover_url: string | null; author_name: string | null } | null
-    } | null
+    }
 }
 
 export type OfferData = {
     id: string
-    exchange_id: string
+    conversation_id: string
     proposer_id: string
-    exchanges: { id: string; initiator_id: string; status: string; accepted_offer_id: string | null }
+    recipient_id: string
+    status: string
     offer_items: OfferItem[]
 }
 
@@ -33,11 +34,12 @@ export interface ChatMessage {
     offer?: OfferData | null
 }
 
+const PAGE_SIZE = 20
+
 const MESSAGE_SELECT = `
     id, content, sender_id, offer_id, created_at,
     profiles(name),
-    offers(id, exchange_id, proposer_id,
-        exchanges!offers_exchange_id_fkey(id, initiator_id, status, accepted_offer_id),
+    offers(id, conversation_id, proposer_id, recipient_id, status,
         offer_items(side, listings(id, books(title, cover_url, author_name)))
     )`
 
@@ -56,17 +58,29 @@ function mapMessage(row: any): ChatMessage {
 export function useRealtimeChat({ conversationId, currentUserId, senderName }: UseRealtimeChatProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [hasMore, setHasMore] = useState(false)
     const [isConnected, setIsConnected] = useState(false)
+    const oldestTimestamp = useRef<string | null>(null)
 
     useEffect(() => {
+        setMessages([])
+        setLoading(true)
+        setHasMore(false)
+        oldestTimestamp.current = null
+
         supabase
             .from("messages")
             .select(MESSAGE_SELECT)
             .eq("conversation_id", conversationId)
-            .order("created_at", { ascending: true })
+            .order("created_at", { ascending: false })
+            .limit(PAGE_SIZE)
             .then(({ data, error }) => {
                 if (error) console.error("messages fetch error:", error)
-                setMessages((data ?? []).map(mapMessage))
+                const page = (data ?? []).map(mapMessage).reverse()
+                setMessages(page)
+                setHasMore((data ?? []).length === PAGE_SIZE)
+                oldestTimestamp.current = page[0]?.created_at ?? null
                 setLoading(false)
             })
     }, [conversationId])
@@ -81,6 +95,26 @@ export function useRealtimeChat({ conversationId, currentUserId, senderName }: U
 
         return () => { supabase.removeChannel(channel) }
     }, [conversationId])
+
+    const loadMore = useCallback(async () => {
+        if (loadingMore || !hasMore || !oldestTimestamp.current) return
+        setLoadingMore(true)
+        const { data, error } = await supabase
+            .from("messages")
+            .select(MESSAGE_SELECT)
+            .eq("conversation_id", conversationId)
+            .order("created_at", { ascending: false })
+            .lt("created_at", oldestTimestamp.current)
+            .limit(PAGE_SIZE)
+        if (error) console.error("loadMore error:", error)
+        const page = (data ?? []).map(mapMessage).reverse()
+        if (page.length > 0) {
+            oldestTimestamp.current = page[0].created_at
+            setMessages((current) => [...page, ...current])
+        }
+        setHasMore((data ?? []).length === PAGE_SIZE)
+        setLoadingMore(false)
+    }, [conversationId, hasMore, loadingMore])
 
     const sendMessage = useCallback(async (content: string) => {
         const { data } = await supabase
@@ -109,18 +143,12 @@ export function useRealtimeChat({ conversationId, currentUserId, senderName }: U
         })
     }, [conversationId, currentUserId, senderName])
 
-    function updateExchangeStatus(exchangeId: string, status: string, acceptedOfferId?: string) {
+    function updateOfferStatus(offerId: string, status: string) {
         setMessages((prev) => prev.map((m) => {
-            if (m.offer?.exchange_id !== exchangeId) return m
-            return {
-                ...m,
-                offer: {
-                    ...m.offer!,
-                    exchanges: { ...m.offer!.exchanges, status, accepted_offer_id: acceptedOfferId ?? null },
-                },
-            }
+            if (m.offer?.id !== offerId) return m
+            return { ...m, offer: { ...m.offer!, status } }
         }))
     }
 
-    return { messages, loading, sendMessage, isConnected, updateExchangeStatus }
+    return { messages, loading, loadingMore, hasMore, loadMore, sendMessage, isConnected, updateOfferStatus }
 }

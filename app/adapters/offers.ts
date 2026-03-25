@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js"
 import { supabase } from "~/lib/supabase/client"
 import { findOrCreateConversation } from "./messages"
 
@@ -7,34 +8,18 @@ export async function createOffer({
     myListingIds,
     theirListingIds,
     message,
-    existingExchangeId,
 }: {
     myId: string
     theirId: string
     myListingIds: string[]
     theirListingIds: string[]
     message: string
-    existingExchangeId?: string | null
 }) {
     const conversationId = await findOrCreateConversation(myId, theirId)
 
-    let exchangeId: string
-    if (existingExchangeId) {
-        exchangeId = existingExchangeId
-    } else {
-        const { data: exchange, error: exchangeError } = await supabase
-            .from("exchanges")
-            .insert({ conversation_id: conversationId, initiator_id: myId })
-            .select("id")
-            .single()
-        if (exchangeError || !exchange) throw exchangeError
-        exchangeId = exchange.id
-    }
-    const exchange = { id: exchangeId }
-
     const { data: offer, error: offerError } = await supabase
         .from("offers")
-        .insert({ exchange_id: exchange.id, proposer_id: myId })
+        .insert({ conversation_id: conversationId, proposer_id: myId, recipient_id: theirId })
         .select("id")
         .single()
 
@@ -48,7 +33,6 @@ export async function createOffer({
     const { error: itemsError } = await supabase.from("offer_items").insert(items)
     if (itemsError) throw itemsError
 
-    // Insert message linked to this offer
     const { data: msg, error: msgError } = await supabase
         .from("messages")
         .insert({ conversation_id: conversationId, sender_id: myId, content: message, offer_id: offer.id })
@@ -57,13 +41,11 @@ export async function createOffer({
 
     if (msgError || !msg) throw msgError
 
-    // Broadcast full message with offer data for realtime recipient
     const { data: fullMsg } = await supabase
         .from("messages")
         .select(`id, content, sender_id, offer_id, created_at,
             profiles(name),
-            offers(id, exchange_id, proposer_id,
-                exchanges!offers_exchange_id_fkey(id, initiator_id, status, accepted_offer_id),
+            offers(id, conversation_id, proposer_id, recipient_id, status,
                 offer_items(side, listings(id, books(title, cover_url, author_name)))
             )`)
         .eq("id", msg.id)
@@ -77,7 +59,7 @@ export async function createOffer({
         })
     }
 
-    return { conversationId, exchangeId: exchange.id, offerId: offer.id }
+    return { conversationId, offerId: offer.id }
 }
 
 function mapMessage(row: any) {
@@ -90,4 +72,69 @@ function mapMessage(row: any) {
         offer_id: row.offer_id ?? null,
         offer: row.offers ?? null,
     }
+}
+
+export type OfferSummary = {
+    id: string
+    status: string
+    created_at: string
+    proposer_id: string
+    recipient_id: string
+    proposer: { name: string | null } | null
+    recipient: { name: string | null } | null
+    offer_items: Array<{
+        side: "proposer" | "recipient"
+        listings: { id: string; books: { title: string; cover_url: string | null } | null } | null
+    }>
+}
+
+export async function getOffersByUser(supabase: SupabaseClient, userId: string): Promise<OfferSummary[]> {
+    const { data } = await supabase
+        .from("offers")
+        .select(`
+            id, status, created_at, proposer_id, recipient_id,
+            proposer:profiles!offers_proposer_id_fkey(name),
+            recipient:profiles!offers_recipient_id_fkey(name),
+            offer_items(side, listings(id, books(title, cover_url)))
+        `)
+        .or(`proposer_id.eq.${userId},recipient_id.eq.${userId}`)
+        .order("created_at", { ascending: false })
+
+    return (data as unknown as OfferSummary[]) ?? []
+}
+
+export async function updateOfferStatus(supabase: SupabaseClient, offerId: string, status: string) {
+    return supabase.from("offers").update({ status }).eq("id", offerId)
+}
+
+export type OfferDetail = {
+    id: string
+    status: string
+    created_at: string
+    proposer_id: string
+    recipient_id: string
+    proposer: { name: string | null } | null
+    recipient: { name: string | null } | null
+    offer_items: Array<{
+        side: "proposer" | "recipient"
+        listings: {
+            id: string
+            books: { title: string; cover_url: string | null; author_name: string | null } | null
+        } | null
+    }>
+}
+
+export async function getOfferById(supabase: SupabaseClient, offerId: string): Promise<OfferDetail | null> {
+    const { data } = await supabase
+        .from("offers")
+        .select(`
+            id, status, created_at, proposer_id, recipient_id,
+            proposer:profiles!offers_proposer_id_fkey(name),
+            recipient:profiles!offers_recipient_id_fkey(name),
+            offer_items(side, listings(id, books(title, cover_url, author_name)))
+        `)
+        .eq("id", offerId)
+        .maybeSingle()
+
+    return data as unknown as OfferDetail | null
 }

@@ -11,7 +11,7 @@ import { AuthProvider } from "./context/auth"
 import { UserProvider } from "./context/user"
 import { MessagesProvider } from "./context/messages"
 import { OfferProvider } from "./context/offer"
-import { RealtimeChat } from "./components/realtime-chat"
+import { RealtimeChat } from "./components/chat/realtime"
 import { useMessagePopover } from "./hooks/use-message-popover"
 
 import type { Route } from "./+types/root"

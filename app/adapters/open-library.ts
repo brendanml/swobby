@@ -34,6 +34,3 @@ export function getBookCoverUrl(cover_i: number, size: "S" | "M" | "L" = "M"): s
 }
 
 
-// searchBooks("Lord of the rings").then((b) => console.log(b))
-
-console.log(getBookCoverUrl(1454705, "S"))

@@ -1,24 +1,24 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router"
-import { supabase } from "~/lib/supabase/client"
 import { findSwaps, type SwapMatch } from "~/adapters/swaps"
+import { useUser } from "~/context/user"
 import { useMessages } from "~/context/messages"
 import { Button } from "~/components/ui/button"
 import { Page } from "~/components/page"
 
 export default function Swaps() {
+    const { user, blockedUserIds } = useUser()
     const { openMessage } = useMessages()
     const [swaps, setSwaps] = useState<SwapMatch[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        supabase.auth.getUser().then(async ({ data: { user } }) => {
-            if (!user) return setLoading(false)
-            const results = await findSwaps(user.id)
+        if (!user?.id) { setLoading(false); return }
+        findSwaps(user.id, blockedUserIds).then((results) => {
             setSwaps(results)
             setLoading(false)
         })
-    }, [])
+    }, [user?.id, blockedUserIds])
 
     return (
         <Page>
