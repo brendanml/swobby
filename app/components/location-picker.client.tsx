@@ -8,8 +8,16 @@ import {
     useMap,
 } from "react-leaflet"
 import type { LeafletMouseEvent } from "leaflet"
+import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps"
+
+const mapPinIcon = L.divIcon({
+    className: "",
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="var(--primary-foreground)" stroke="var(--primary-foreground)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3" fill="var(--primary)" stroke="var(--primary)"/></svg>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+})
 
 const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API as string
 
@@ -102,7 +110,7 @@ export default function LocationPicker({
                     />
                     <ClickHandler onChange={(la, ln) => onChange(la, ln, "")} />
                     <MapFlyTo lat={lat} lng={lng} />
-                    <Marker position={[lat, lng]} />
+                    <Marker position={[lat, lng]} icon={mapPinIcon} />
                     {radiusKm && (
                         <Circle
                             center={[lat, lng]}
