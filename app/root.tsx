@@ -17,6 +17,8 @@ import { useMessagePopover } from "./hooks/use-message-popover"
 import type { Route } from "./+types/root"
 import "./app.css"
 
+export const meta: Route.MetaFunction = () => [{ title: "swobby" }]
+
 export const links: Route.LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
     {
@@ -24,6 +26,7 @@ export const links: Route.LinksFunction = () => [
         href: "https://fonts.gstatic.com",
         crossOrigin: "anonymous",
     },
+    { rel: "icon", href: "/swobby.svg", type: "image/svg+xml" },
 ]
 
 export function Layout({ children }: { children: React.ReactNode }) {

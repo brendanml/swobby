@@ -44,8 +44,8 @@ export default function SetupPage() {
     const { refresh } = useUser()
     const [step, setStep] = useState(0)
     const [name, setName] = useState("")
-    const [lat, setLat] = useState(45.5)
-    const [lng, setLng] = useState(-73.6)
+    const [lat, setLat] = useState(43.451291)
+    const [lng, setLng] = useState(-80.492781)
     const [address, setAddress] = useState("")
     const [genres, setGenres] = useState<string[]>([])
     const [submitting, setSubmitting] = useState(false)
@@ -106,8 +106,8 @@ export default function SetupPage() {
                     <AlertDescription>
                         <strong>swobby is in alpha.</strong> You can sign up
                         from anywhere, but we recommend being in the{" "}
-                        <strong>Kitchener–Waterloo</strong> area to see real
-                        local users and listings.
+                        <strong>Waterloo</strong> area to see real local users
+                        and listings.
                     </AlertDescription>
                 </Alert>
 

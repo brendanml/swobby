@@ -102,7 +102,10 @@ export default function LandingPage() {
                 </p>
                 <div className="flex flex-col items-center gap-3">
                     <GoogleSignInButton onClick={signIn} />
-                    <Button onClick={() => navigate("/explore")}>
+                    <Button
+                        className="p-3 py-4"
+                        onClick={() => navigate("/explore")}
+                    >
                         <Compass className="size-5" />
                         Explore
                     </Button>

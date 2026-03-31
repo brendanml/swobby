@@ -11,6 +11,14 @@ import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Slider } from "~/components/ui/slider"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "~/components/ui/dialog"
 
 const LocationPicker = lazy(() => import("~/components/location-picker.client"))
 
@@ -24,13 +32,10 @@ export default function Profile() {
     const [lat, setLat] = useState(45.5)
     const [lng, setLng] = useState(-73.6)
     const [address, setAddress] = useState("")
-    const [confirmDelete, setConfirmDelete] = useState(false)
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [deleteConfirmText, setDeleteConfirmText] = useState("")
 
     async function handleDeleteAccount() {
-        if (!confirmDelete) {
-            setConfirmDelete(true)
-            return
-        }
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
         await supabase.rpc("delete_user")
@@ -136,20 +141,39 @@ export default function Profile() {
                             type="button"
                             variant="destructive"
                             className="self-start"
-                            onClick={handleDeleteAccount}
+                            onClick={() => setDeleteDialogOpen(true)}
                         >
-                            {confirmDelete ? "Are you sure? Click again to confirm" : "Delete Account"}
+                            Delete Account
                         </Button>
-                        {confirmDelete && (
-                            <button
-                                type="button"
-                                className="ml-3 text-sm text-muted-foreground underline"
-                                onClick={() => setConfirmDelete(false)}
-                            >
-                                Cancel
-                            </button>
-                        )}
                     </div>
+
+                    <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
+                        setDeleteDialogOpen(open)
+                        if (!open) setDeleteConfirmText("")
+                    }}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Delete account</DialogTitle>
+                                <DialogDescription>
+                                    This will permanently delete your account and all your data. Type <strong>delete my account</strong> to confirm.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <Input
+                                value={deleteConfirmText}
+                                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                placeholder="delete my account"
+                            />
+                            <DialogFooter>
+                                <Button
+                                    variant="destructive"
+                                    disabled={deleteConfirmText !== "delete my account"}
+                                    onClick={handleDeleteAccount}
+                                >
+                                    Delete Account
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </form>
             )}
         </Page>
