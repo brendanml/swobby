@@ -8,16 +8,23 @@ export interface Book {
     cover_url?: string | null
 }
 
+function olHeaders(): HeadersInit {
+    const app = process.env.APP_NAME ?? "BookSwapApp"
+    const contact = process.env.CONTACT_EMAIL ?? ""
+    return {
+        "User-Agent": `${app}${contact ? ` (${contact})` : ""}`,
+    }
+}
 
-export async function searchBooks(query: string, limit = 10): Promise<Book[]> {
+export async function searchBooks(query: string, limit = 10, offset = 0): Promise<Book[]> {
     const response = await fetch(
-        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${limit}`
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`,
+        { headers: olHeaders() },
     )
 
     if (!response.ok) throw new Error("Failed to fetch books")
 
     const data = await response.json()
-    // console.log(data)
     return data.docs.map((doc: any): Book => ({
         key: doc.key,
         title: doc.title,
@@ -25,12 +32,28 @@ export async function searchBooks(query: string, limit = 10): Promise<Book[]> {
         author_name: doc.author_name?.[0],
         first_publish_year: doc.first_publish_year,
         work_id: doc.key?.replace("/works/", "") ?? "",
-        cover_url: doc.cover_i ? getBookCoverUrl(doc.cover_i) : null
+        cover_url: doc.cover_i ? getBookCoverUrl(doc.cover_i) : null,
     }))
 }
 
-export function getBookCoverUrl(cover_i: number, size: "S" | "M" | "L" = "M"): string {
+export function getBookCoverUrl(
+    cover_i: number,
+    size: "S" | "M" | "L" = "M",
+): string {
     return `https://covers.openlibrary.org/b/id/${cover_i}-${size}.jpg`
 }
 
-
+export async function getWorkIdByIsbn(isbn: string): Promise<string | null> {
+    try {
+        const response = await fetch(
+            `https://openlibrary.org/isbn/${encodeURIComponent(isbn)}.json`,
+            { headers: olHeaders() },
+        )
+        if (!response.ok) return null
+        const data = await response.json()
+        const workKey = data.works?.[0]?.key as string | undefined
+        return workKey ? workKey.replace("/works/", "") : null
+    } catch {
+        return null
+    }
+}

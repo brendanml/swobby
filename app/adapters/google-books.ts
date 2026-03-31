@@ -1,10 +1,61 @@
-export async function getBookCover(title: string): Promise<string | null> {
-    const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=intitle:${encodeURIComponent(title)}&maxResults=1`
-    )
+export async function getBookCover(
+    title: string,
+    author?: string,
+): Promise<string | null> {
+    try {
+        const apiKey = process.env.GOOGLE_BOOKS_API_KEY
+        const q = author
+            ? `intitle:${encodeURIComponent(title)}+inauthor:${encodeURIComponent(author)}`
+            : `intitle:${encodeURIComponent(title)}`
+        const url = `https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&printType=books${apiKey ? `&key=${apiKey}` : ""}`
+        const response = await fetch(url)
+        if (!response.ok) return null
+        const data = await response.json()
+        const links = data.items?.[0]?.volumeInfo?.imageLinks
+        const thumbnail = links?.thumbnail ?? links?.smallThumbnail ?? null
+        return thumbnail ? thumbnail.replace("http://", "https://") : null
+    } catch {
+        return null
+    }
+}
 
-    if (!response.ok) throw new Error("Failed to fetch book cover")
+export interface GoogleBook {
+    title: string
+    author_name?: string
+    first_publish_year?: number
+    cover_url?: string | null
+    isbn?: string
+}
 
+export async function searchBooks(
+    query: string,
+    limit = 10,
+): Promise<GoogleBook[]> {
+    const apiKey = process.env.GOOGLE_BOOKS_API_KEY
+    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=${limit}&printType=books${apiKey ? `&key=${apiKey}` : ""}`
+    const response = await fetch(url)
+    if (!response.ok) throw new Error("Failed to fetch books from Google Books")
     const data = await response.json()
-    return data.items?.[0]?.volumeInfo?.imageLinks?.thumbnail ?? null
+    return (data.items ?? []).map((item: any): GoogleBook => {
+        const info = item.volumeInfo
+        const isbn =
+            info.industryIdentifiers?.find(
+                (id: any) => id.type === "ISBN_13",
+            )?.identifier ??
+            info.industryIdentifiers?.find(
+                (id: any) => id.type === "ISBN_10",
+            )?.identifier ??
+            undefined
+        return {
+            title: info.title ?? "Unknown",
+            author_name: info.authors?.[0],
+            first_publish_year: info.publishedDate
+                ? parseInt(info.publishedDate)
+                : undefined,
+            cover_url:
+                info.imageLinks?.thumbnail?.replace("http://", "https://") ??
+                null,
+            isbn,
+        }
+    })
 }

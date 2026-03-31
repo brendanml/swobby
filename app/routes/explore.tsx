@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import {
     findNearbyBooks,
     findNearbyBooksForGuest,
@@ -11,6 +11,7 @@ import { BookCard } from "~/components/book/card"
 import { SwapCard } from "~/components/swap/card"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "~/components/ui/button"
+import { Spinner } from "~/components/ui/spinner"
 import { useIsMobile } from "~/hooks/use-mobile"
 
 export default function Explore() {
@@ -18,22 +19,10 @@ export default function Explore() {
     const [swaps, setSwaps] = useState<SwapMatch[]>([])
     const [nearbyBooks, setNearbyBooks] = useState<NearbyBook[]>([])
     const [loading, setLoading] = useState(true)
+    const [locationLoading, setLocationLoading] = useState(false)
     const [swapIndex, setSwapIndex] = useState(0)
     const isMobile = useIsMobile()
     const perPage = isMobile ? 1 : 2
-    const scrollRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        const el = scrollRef.current
-        if (!el) return
-        const card = el.firstElementChild as HTMLElement
-        if (!card) return
-        const gap = isMobile ? 0 : 24
-        el.scrollTo({
-            left: swapIndex * (card.offsetWidth + gap),
-            behavior: "smooth",
-        })
-    }, [swapIndex, isMobile])
 
     useEffect(() => {
         if (user?.id) {
@@ -48,11 +37,18 @@ export default function Explore() {
         } else {
             setLoading(false)
             if (!navigator.geolocation) return
-            navigator.geolocation.getCurrentPosition(({ coords }) => {
-                findNearbyBooksForGuest(coords.latitude, coords.longitude).then(
-                    setNearbyBooks,
-                )
-            })
+            setLocationLoading(true)
+            navigator.geolocation.getCurrentPosition(
+                ({ coords }) => {
+                    findNearbyBooksForGuest(coords.latitude, coords.longitude).then(
+                        (results) => {
+                            setNearbyBooks(results)
+                            setLocationLoading(false)
+                        },
+                    )
+                },
+                () => setLocationLoading(false),
+            )
         }
     }, [user?.id, blockedUserIds])
 
@@ -62,7 +58,7 @@ export default function Explore() {
                 <div className="flex flex-col gap-10 animate-pulse">
                     <div className="flex flex-col gap-4">
                         <div className="h-5 w-36 bg-muted rounded" />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {[...Array(2)].map((_, i) => (
                                 <div
                                     key={i}
@@ -94,17 +90,9 @@ export default function Explore() {
                 <div className="flex flex-col gap-10">
                     {swaps.length > 0 && (
                         <div className="flex flex-col gap-4">
-                            <div
-                                ref={scrollRef}
-                                className={`flex overflow-x-hidden pb-2 -mb-2 z-10 ${!isMobile ? "gap-4" : ""}`}
-                            >
-                                {swaps.map((swap) => (
-                                    <div
-                                        key={swap.user.id}
-                                        className={`shrink-0 ${isMobile ? "w-full" : "w-[calc(50%-12px)]"}`}
-                                    >
-                                        <SwapCard swap={swap} />
-                                    </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {swaps.slice(swapIndex, swapIndex + perPage).map((swap) => (
+                                    <SwapCard key={swap.user.id} swap={swap} />
                                 ))}
                             </div>
                             <div className="flex items-center justify-between">
@@ -118,18 +106,13 @@ export default function Explore() {
                                     ))}
                                 </div>
                                 <span className="text-sm text-muted-foreground">
-                                    {swaps.length} Swap
-                                    {swaps.length !== 1 ? "s" : ""} nearby
+                                    {swaps.length} Swap{swaps.length !== 1 ? "s" : ""} nearby
                                 </span>
                                 <div className="flex gap-2">
                                     <Button
                                         variant="default"
                                         size="icon"
-                                        onClick={() =>
-                                            setSwapIndex((i) =>
-                                                Math.max(0, i - 1),
-                                            )
-                                        }
+                                        onClick={() => setSwapIndex((i) => Math.max(0, i - 1))}
                                         disabled={swapIndex === 0}
                                     >
                                         <ChevronLeft className="size-4" />
@@ -137,17 +120,8 @@ export default function Explore() {
                                     <Button
                                         variant="default"
                                         size="icon"
-                                        onClick={() =>
-                                            setSwapIndex((i) =>
-                                                Math.min(
-                                                    swaps.length - 1,
-                                                    i + 1,
-                                                ),
-                                            )
-                                        }
-                                        disabled={
-                                            swapIndex >= swaps.length - perPage
-                                        }
+                                        onClick={() => setSwapIndex((i) => Math.min(swaps.length - perPage, i + 1))}
+                                        disabled={swapIndex >= swaps.length - perPage}
                                     >
                                         <ChevronRight className="size-4" />
                                     </Button>
@@ -158,10 +132,13 @@ export default function Explore() {
 
                     <div className="flex flex-col gap-4">
                         {nearbyBooks.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                No books nearby yet. Set your location in
-                                Profile.
-                            </p>
+                            locationLoading ? (
+                                <Spinner className="size-5 text-muted-foreground" />
+                            ) : user ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No books nearby yet.
+                                </p>
+                            ) : null
                         ) : (
                             <div className="grid grid-cols-2 md:grid-cols-6 gap-1 md:gap-2">
                                 {nearbyBooks.map((book) => (

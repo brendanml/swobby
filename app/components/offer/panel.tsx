@@ -1,28 +1,33 @@
 import { useEffect, useState } from "react"
-import { Check } from "lucide-react"
+import { Check, Sparkles } from "lucide-react"
 import { supabase } from "~/lib/supabase/client"
 import { useOffer } from "~/context/offer"
 import { useUser } from "~/context/user"
 import { useMessages } from "~/context/messages"
 import { getListingsByUser, type Listing } from "~/adapters/listings"
 import { createOffer } from "~/adapters/offers"
+import { Panel } from "~/components/panel"
+import { FilterSearch } from "~/components/filter-search"
 import { Button } from "~/components/ui/button"
 import { Spinner } from "~/components/ui/spinner"
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-} from "~/components/ui/sheet"
-import { useIsMobile } from "~/hooks/use-mobile"
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "~/components/ui/dialog"
 
 function ListingOption({
     listing,
     selected,
+    isMatch,
     onToggle,
 }: {
     listing: Listing
     selected: boolean
+    isMatch?: boolean
     onToggle: () => void
 }) {
     return (
@@ -51,7 +56,7 @@ function ListingOption({
                     className="w-10 h-14 object-cover rounded"
                 />
             )}
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                 <p className="font-medium text-sm">{listing.books?.title}</p>
                 {listing.books?.author_name && (
                     <p className="text-xs text-muted-foreground">
@@ -62,6 +67,9 @@ function ListingOption({
                     {listing.condition}
                 </p>
             </div>
+            {isMatch && (
+                <Sparkles className="size-3.5 text-warning-foreground shrink-0" />
+            )}
         </div>
     )
 }
@@ -75,20 +83,26 @@ export function OfferPanel() {
         preselectedMyWorkIds,
         preselectedTheirWorkIds,
     } = useOffer()
-    const isMobile = useIsMobile()
     const { user } = useUser()
     const { openMessage } = useMessages()
     const [theirListings, setTheirListings] = useState<Listing[]>([])
     const [myListings, setMyListings] = useState<Listing[]>([])
-    const [selectedTheirIds, setSelectedTheirIds] = useState<Set<string>>(new Set())
+    const [selectedTheirIds, setSelectedTheirIds] = useState<Set<string>>(
+        new Set(),
+    )
     const [selectedMyIds, setSelectedMyIds] = useState<Set<string>>(new Set())
+    const [theirQuery, setTheirQuery] = useState("")
+    const [myQuery, setMyQuery] = useState("")
     const [submitting, setSubmitting] = useState(false)
     const [loadingListings, setLoadingListings] = useState(false)
+    const [confirmOpen, setConfirmOpen] = useState(false)
 
     useEffect(() => {
         if (!open || !theirId || !user) return
         setSelectedTheirIds(new Set())
         setSelectedMyIds(new Set())
+        setTheirQuery("")
+        setMyQuery("")
         setLoadingListings(true)
         Promise.all([
             getListingsByUser(supabase, theirId),
@@ -100,7 +114,13 @@ export function OfferPanel() {
                 setSelectedTheirIds(
                     new Set(
                         theirs
-                            .filter((l) => l.books && preselectedTheirWorkIds.includes(l.books.work_id ?? ""))
+                            .filter(
+                                (l) =>
+                                    l.books &&
+                                    preselectedTheirWorkIds.includes(
+                                        l.books.work_id ?? "",
+                                    ),
+                            )
                             .map((l) => l.id),
                     ),
                 )
@@ -108,7 +128,13 @@ export function OfferPanel() {
                 setSelectedMyIds(
                     new Set(
                         mine
-                            .filter((l) => l.books && preselectedMyWorkIds.includes(l.books.work_id ?? ""))
+                            .filter(
+                                (l) =>
+                                    l.books &&
+                                    preselectedMyWorkIds.includes(
+                                        l.books.work_id ?? "",
+                                    ),
+                            )
                             .map((l) => l.id),
                     ),
                 )
@@ -122,9 +148,10 @@ export function OfferPanel() {
         return next
     }
 
-    async function handleSubmit() {
-        if (!user || !theirId || !selectedMyIds.size || !selectedTheirIds.size) return
+    async function submitOffer() {
+        if (!user || !theirId) return
         setSubmitting(true)
+        setConfirmOpen(false)
         try {
             await createOffer({
                 myId: user.id,
@@ -140,84 +167,149 @@ export function OfferPanel() {
         }
     }
 
-    return (
-        <Sheet open={open} onOpenChange={(v) => !v && closeOffer()}>
-            <SheetContent
-                side={isMobile ? "bottom" : "right"}
-                className="flex flex-col gap-0 p-0 md:max-h-screen max-h-[85vh]"
-                aria-describedby={undefined}
-            >
-                <SheetHeader className="px-6 py-4 border-b">
-                    <SheetTitle>Make an Offer</SheetTitle>
-                </SheetHeader>
+    function handleSubmit() {
+        if (!user || !theirId || !selectedMyIds.size || !selectedTheirIds.size) return
+        if (Math.abs(selectedMyIds.size - selectedTheirIds.size) > 1) {
+            setConfirmOpen(true)
+            return
+        }
+        submitOffer()
+    }
 
-                <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-6">
-                    {loadingListings ? (
-                        <div className="flex flex-col gap-6 animate-pulse">
-                            {[...Array(2)].map((_, s) => (
-                                <div key={s} className="flex flex-col gap-2">
-                                    <div className="h-3 w-32 bg-muted rounded" />
-                                    {[...Array(2)].map((_, i) => (
-                                        <div key={i} className="flex items-center gap-3 p-3 rounded-lg border">
-                                            <div className="size-4 rounded-sm bg-muted shrink-0" />
-                                            <div className="w-10 h-14 rounded bg-muted shrink-0" />
-                                            <div className="flex flex-col gap-1.5 flex-1">
-                                                <div className="h-3 bg-muted rounded w-3/4" />
-                                                <div className="h-3 bg-muted rounded w-1/2" />
-                                            </div>
-                                        </div>
-                                    ))}
+    return (
+        <>
+        <Panel
+            open={open}
+            onClose={closeOffer}
+            title="Make an Offer"
+            footer={
+                <Button
+                    className="w-full"
+                    onClick={handleSubmit}
+                    disabled={
+                        submitting ||
+                        !selectedMyIds.size ||
+                        !selectedTheirIds.size
+                    }
+                >
+                    {submitting && <Spinner data-icon="inline-start" />}
+                    {submitting ? "Sending..." : "Send Offer"}
+                </Button>
+            }
+        >
+            {loadingListings ? (
+                <div className="flex flex-col gap-6 animate-pulse">
+                    {[...Array(2)].map((_, s) => (
+                        <div key={s} className="flex flex-col gap-2">
+                            <div className="h-3 w-32 bg-muted rounded" />
+                            {[...Array(2)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="flex items-center gap-3 p-3 rounded-lg border"
+                                >
+                                    <div className="size-4 rounded-sm bg-muted shrink-0" />
+                                    <div className="w-10 h-14 rounded bg-muted shrink-0" />
+                                    <div className="flex flex-col gap-1.5 flex-1">
+                                        <div className="h-3 bg-muted rounded w-3/4" />
+                                        <div className="h-3 bg-muted rounded w-1/2" />
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        <>
-                            <div className="flex flex-col gap-2">
-                                <p className="text-sm font-medium">Their listings you want</p>
-                                {theirListings.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">They have no available listings.</p>
-                                ) : (
-                                    theirListings.map((l) => (
-                                        <ListingOption
-                                            key={l.id}
-                                            listing={l}
-                                            selected={selectedTheirIds.has(l.id)}
-                                            onToggle={() => setSelectedTheirIds((s) => toggle(s, l.id))}
-                                        />
-                                    ))
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                                <p className="text-sm font-medium">Your listings to offer</p>
-                                {myListings.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">You have no available listings.</p>
-                                ) : (
-                                    myListings.map((l) => (
-                                        <ListingOption
-                                            key={l.id}
-                                            listing={l}
-                                            selected={selectedMyIds.has(l.id)}
-                                            onToggle={() => setSelectedMyIds((s) => toggle(s, l.id))}
-                                        />
-                                    ))
-                                )}
-                            </div>
-                        </>
-                    )}
+                    ))}
                 </div>
+            ) : (
+                <>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm font-medium">Their Listings</p>
+                        <FilterSearch
+                            value={theirQuery}
+                            onChange={setTheirQuery}
+                            placeholder="Filter listings..."
+                        />
+                        {theirListings.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                They have no available listings.
+                            </p>
+                        ) : (
+                            theirListings
+                                .filter((l) => {
+                                    const q = theirQuery.toLowerCase()
+                                    return !q || l.books?.title?.toLowerCase().includes(q) || l.books?.author_name?.toLowerCase().includes(q)
+                                })
+                                .sort((a, b) => {
+                                    const aM = preselectedTheirWorkIds.includes(a.books?.work_id ?? "")
+                                    const bM = preselectedTheirWorkIds.includes(b.books?.work_id ?? "")
+                                    return Number(bM) - Number(aM)
+                                })
+                                .map((l) => (
+                                    <ListingOption
+                                        key={l.id}
+                                        listing={l}
+                                        selected={selectedTheirIds.has(l.id)}
+                                        isMatch={preselectedTheirWorkIds.includes(l.books?.work_id ?? "")}
+                                        onToggle={() => setSelectedTheirIds((s) => toggle(s, l.id))}
+                                    />
+                                ))
+                        )}
+                    </div>
 
-                <div className="px-6 py-4 border-t">
-                    <Button
-                        className="w-full"
-                        onClick={handleSubmit}
-                        disabled={submitting || !selectedMyIds.size || !selectedTheirIds.size}
-                    >
-                        {submitting && <Spinner data-icon="inline-start" />}
-                        {submitting ? "Sending..." : "Send Offer"}
+                    <div className="flex flex-col gap-2">
+                        <p className="text-sm font-medium">Your Listings</p>
+                        <FilterSearch
+                            value={myQuery}
+                            onChange={setMyQuery}
+                            placeholder="Filter listings..."
+                        />
+                        {myListings.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                You have no available listings.
+                            </p>
+                        ) : (
+                            myListings
+                                .filter((l) => {
+                                    const q = myQuery.toLowerCase()
+                                    return !q || l.books?.title?.toLowerCase().includes(q) || l.books?.author_name?.toLowerCase().includes(q)
+                                })
+                                .sort((a, b) => {
+                                    const aM = preselectedMyWorkIds.includes(a.books?.work_id ?? "")
+                                    const bM = preselectedMyWorkIds.includes(b.books?.work_id ?? "")
+                                    return Number(bM) - Number(aM)
+                                })
+                                .map((l) => (
+                                    <ListingOption
+                                        key={l.id}
+                                        listing={l}
+                                        selected={selectedMyIds.has(l.id)}
+                                        isMatch={preselectedMyWorkIds.includes(l.books?.work_id ?? "")}
+                                        onToggle={() => setSelectedMyIds((s) => toggle(s, l.id))}
+                                    />
+                                ))
+                        )}
+                    </div>
+                </>
+            )}
+        </Panel>
+
+        <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Unbalanced trade</DialogTitle>
+                    <DialogDescription>
+                        You're offering {selectedMyIds.size} book{selectedMyIds.size !== 1 ? "s" : ""} for {selectedTheirIds.size}. Fair trades work best when both sides are equal — are you sure you want to send this offer?
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+                        Go back
                     </Button>
-                </div>
-            </SheetContent>
-        </Sheet>
+                    <Button onClick={submitOffer} disabled={submitting}>
+                        {submitting && <Spinner data-icon="inline-start" />}
+                        Send anyway
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+        </>
     )
 }

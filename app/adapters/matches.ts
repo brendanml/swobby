@@ -3,7 +3,10 @@ import { supabase } from "~/lib/supabase/client"
 
 const H3_RESOLUTION = 7
 const DEFAULT_KM = 20
-const DEFAULT_K_RING = Math.ceil(DEFAULT_KM / 1.22)
+
+function kmToKRing(km: number) {
+    return Math.ceil(km / 1.22)
+}
 
 export function latLngToH3(lat: number, lng: number): string {
     return latLngToCell(lat, lng, H3_RESOLUTION)
@@ -43,17 +46,21 @@ export async function findNearbyBooks(userId: string, blockedUserIds: string[] =
 
 export async function findNearbyBooksForGuest(lat: number, lng: number, blockedUserIds: string[] = []): Promise<NearbyBook[]> {
     const origin = latLngToH3(lat, lng)
-    const myCells = new Set(gridDisk(origin, DEFAULT_K_RING))
+    const myCells = new Set(gridDisk(origin, kmToKRing(DEFAULT_KM)))
     const blockedSet = new Set(blockedUserIds)
 
     const { data: candidates } = await supabase
         .from("profiles")
-        .select("id, name, lat, lng, h3_index")
+        .select("id, name, lat, lng, h3_index, distance_preference")
 
     if (!candidates) return []
 
     const nearby = candidates
-        .filter((c) => c.h3_index && myCells.has(c.h3_index) && !blockedSet.has(c.id))
+        .filter((c) => {
+            if (!c.h3_index || !myCells.has(c.h3_index) || blockedSet.has(c.id)) return false
+            const distanceKm = gridDistance(origin, c.h3_index) * 1.22
+            return distanceKm <= (c.distance_preference ?? DEFAULT_KM)
+        })
         .map((c) => ({ ...c, distanceKm: Math.max(1, gridDistance(origin, c.h3_index!) * 1.22) }))
 
     if (!nearby.length) return []
@@ -77,28 +84,28 @@ export async function findNearbyBooksForGuest(lat: number, lng: number, blockedU
 export async function findNearby(userId: string) {
     const { data: me } = await supabase
         .from("profiles")
-        .select("h3_index")
+        .select("h3_index, distance_preference")
         .eq("id", userId)
         .single()
 
     if (!me?.h3_index) return []
 
     const origin = me.h3_index
-    const myCells = new Set(gridDisk(origin, DEFAULT_K_RING))
+    const myKRing = kmToKRing(me.distance_preference ?? DEFAULT_KM)
+    const myCells = new Set(gridDisk(origin, myKRing))
 
     const { data: candidates } = await supabase
         .from("profiles")
-        .select("id, name, lat, lng, h3_index")
+        .select("id, name, lat, lng, h3_index, distance_preference")
         .neq("id", userId)
 
     if (!candidates) return []
 
     return candidates
         .filter((c) => {
-            if (!c.h3_index) return false
-            if (!myCells.has(c.h3_index)) return false
-            const theirCells = gridDisk(c.h3_index, DEFAULT_K_RING)
-            return theirCells.includes(origin)
+            if (!c.h3_index || !myCells.has(c.h3_index)) return false
+            const distanceKm = gridDistance(origin, c.h3_index) * 1.22
+            return distanceKm <= (c.distance_preference ?? DEFAULT_KM)
         })
         .map((c) => ({ ...c, distanceKm: Math.max(1, gridDistance(origin, c.h3_index!) * 1.22) }))
 }

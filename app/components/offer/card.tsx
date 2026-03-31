@@ -2,6 +2,7 @@ import { Link } from "react-router"
 import { ArrowUpRight } from "lucide-react"
 import { supabase } from "~/lib/supabase/client"
 import { BookCover } from "~/components/book/cover"
+import { Card } from "~/components/ui/card"
 import { updateOfferStatus } from "~/adapters/offers"
 import type { OfferData } from "~/hooks/use-realtime-chat"
 
@@ -53,7 +54,7 @@ export function OfferCard({
     }
 
     return (
-        <div className={`border rounded-xl text-sm w-full mt-1 overflow-hidden ${isOwn ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}`}>
+        <Card className={`border text-sm w-full mt-1 overflow-hidden ${isOwn ? "bg-primary text-primary-foreground" : ""}`}>
             <div className="p-3 flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex flex-col gap-3 flex-1">
@@ -111,6 +112,6 @@ export function OfferCard({
                     )}
                 </div>
             )}
-        </div>
+        </Card>
     )
 }

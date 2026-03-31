@@ -29,7 +29,7 @@ function ClickHandler({
 function MapFlyTo({ lat, lng }: { lat: number; lng: number }) {
     const map = useMap()
     useEffect(() => {
-        map.flyTo([lat, lng], map.getZoom(), { animate: true, duration: 1.5 })
+        map.setView([lat, lng], map.getZoom(), { animate: false })
     }, [lat, lng])
     return null
 }
@@ -108,9 +108,9 @@ export default function LocationPicker({
                             center={[lat, lng]}
                             radius={radiusKm * 1000}
                             pathOptions={{
-                                color: "blue",
-                                fillColor: "blue",
-                                fillOpacity: 0.08,
+                                color: "var(--primary-foreground)",
+                                fillColor: "var(--primary)",
+                                fillOpacity: 0.15,
                                 weight: 1.5,
                             }}
                         />

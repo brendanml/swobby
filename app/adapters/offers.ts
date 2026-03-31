@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { gridDistance } from "h3-js"
 import { supabase } from "~/lib/supabase/client"
 import { findOrCreateConversation } from "./messages"
 
@@ -25,9 +26,30 @@ export async function createOffer({
 
     if (offerError || !offer) throw offerError
 
+    // Resolve work_id for each listing up front
+    const allListingIds = [...myListingIds, ...theirListingIds]
+    const { data: listingRows } = await supabase
+        .from("listings")
+        .select("id, books(work_id)")
+        .in("id", allListingIds)
+
+    const workIdMap: Record<string, string | null> = Object.fromEntries(
+        (listingRows ?? []).map((l: any) => [l.id, l.books?.work_id ?? null]),
+    )
+
     const items = [
-        ...myListingIds.map((listing_id) => ({ offer_id: offer.id, listing_id, side: "proposer" })),
-        ...theirListingIds.map((listing_id) => ({ offer_id: offer.id, listing_id, side: "recipient" })),
+        ...myListingIds.map((listing_id) => ({
+            offer_id: offer.id,
+            listing_id,
+            side: "proposer",
+            work_id: workIdMap[listing_id] ?? null,
+        })),
+        ...theirListingIds.map((listing_id) => ({
+            offer_id: offer.id,
+            listing_id,
+            side: "recipient",
+            work_id: workIdMap[listing_id] ?? null,
+        })),
     ]
 
     const { error: itemsError } = await supabase.from("offer_items").insert(items)
@@ -46,7 +68,7 @@ export async function createOffer({
         .select(`id, content, sender_id, offer_id, created_at,
             profiles(name),
             offers(id, conversation_id, proposer_id, recipient_id, status,
-                offer_items(side, listings(id, books(title, cover_url, author_name)))
+                offer_items(side, work_id, books:books!offer_items_work_id_fkey(title, cover_url, author_name), listings(id))
             )`)
         .eq("id", msg.id)
         .single()
@@ -84,7 +106,9 @@ export type OfferSummary = {
     recipient: { name: string | null } | null
     offer_items: Array<{
         side: "proposer" | "recipient"
-        listings: { id: string; books: { title: string; cover_url: string | null } | null } | null
+        work_id: string | null
+        books: { title: string; cover_url: string | null } | null
+        listings: { id: string } | null
     }>
 }
 
@@ -95,7 +119,7 @@ export async function getOffersByUser(supabase: SupabaseClient, userId: string):
             id, status, created_at, proposer_id, recipient_id,
             proposer:profiles!offers_proposer_id_fkey(name),
             recipient:profiles!offers_recipient_id_fkey(name),
-            offer_items(side, listings(id, books(title, cover_url)))
+            offer_items(side, work_id, books:books!offer_items_work_id_fkey(title, cover_url), listings(id))
         `)
         .or(`proposer_id.eq.${userId},recipient_id.eq.${userId}`)
         .order("created_at", { ascending: false })
@@ -115,12 +139,12 @@ export type OfferDetail = {
     recipient_id: string
     proposer: { name: string | null } | null
     recipient: { name: string | null } | null
+    distanceKm: number | null
     offer_items: Array<{
         side: "proposer" | "recipient"
-        listings: {
-            id: string
-            books: { title: string; cover_url: string | null; author_name: string | null } | null
-        } | null
+        work_id: string | null
+        books: { work_id: string; title: string; cover_url: string | null; author_name: string | null } | null
+        listings: { id: string } | null
     }>
 }
 
@@ -129,12 +153,25 @@ export async function getOfferById(supabase: SupabaseClient, offerId: string): P
         .from("offers")
         .select(`
             id, status, created_at, proposer_id, recipient_id,
-            proposer:profiles!offers_proposer_id_fkey(name),
-            recipient:profiles!offers_recipient_id_fkey(name),
-            offer_items(side, listings(id, books(title, cover_url, author_name)))
+            proposer:profiles!offers_proposer_id_fkey(name, h3_index),
+            recipient:profiles!offers_recipient_id_fkey(name, h3_index),
+            offer_items(side, work_id, books:books!offer_items_work_id_fkey(work_id, title, cover_url, author_name), listings(id))
         `)
         .eq("id", offerId)
         .maybeSingle()
 
-    return data as unknown as OfferDetail | null
+    if (!data) return null
+
+    const d = data as any
+    let distanceKm: number | null = null
+    if (d.proposer?.h3_index && d.recipient?.h3_index) {
+        distanceKm = Math.max(1, gridDistance(d.proposer.h3_index, d.recipient.h3_index) * 1.22)
+    }
+
+    return {
+        ...(d as any),
+        proposer: d.proposer ? { name: d.proposer.name ?? null } : null,
+        recipient: d.recipient ? { name: d.recipient.name ?? null } : null,
+        distanceKm,
+    } as OfferDetail
 }

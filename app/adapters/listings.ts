@@ -138,3 +138,58 @@ export async function deleteListing(supabase: SupabaseClient, id: string) {
 export async function deleteWant(supabase: SupabaseClient, id: string) {
     return supabase.from("wants").delete().eq("id", id)
 }
+
+export async function updateLibraryAfterOffer(
+    supabase: SupabaseClient,
+    {
+        userId,
+        currentOfferId,
+        myListingIds,
+        theirWorkIds,
+    }: {
+        userId: string
+        currentOfferId: string
+        myListingIds: string[]
+        theirWorkIds: string[]
+    },
+) {
+    const tasks: Promise<unknown>[] = []
+
+    if (myListingIds.length > 0) {
+        // Mark listings as sold
+        tasks.push(
+            Promise.resolve(supabase.from("listings").update({ status: "sold" }).in("id", myListingIds))
+        )
+
+        // Find other offers involving these listings and cancel them
+        tasks.push(
+            Promise.resolve(
+                supabase
+                    .from("offer_items")
+                    .select("offer_id")
+                    .in("listing_id", myListingIds)
+            ).then(({ data }) => {
+                const offerIds = [...new Set(
+                    (data ?? []).map((r: any) => r.offer_id as string)
+                )].filter((id) => id !== currentOfferId)
+
+                if (offerIds.length === 0) return
+                return Promise.resolve(
+                    supabase
+                        .from("offers")
+                        .update({ status: "cancelled" })
+                        .in("id", offerIds)
+                        .neq("status", "accepted")
+                )
+            })
+        )
+    }
+
+    if (theirWorkIds.length > 0) {
+        tasks.push(
+            Promise.resolve(supabase.from("wants").delete().eq("user_id", userId).in("work_id", theirWorkIds))
+        )
+    }
+
+    await Promise.all(tasks)
+}

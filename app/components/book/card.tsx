@@ -25,7 +25,7 @@ export function BookCard({
                 className="w-full h-auto aspect-2/3"
             />
             <div>
-                <p className="text-sm  line-clamp-2">{title}</p>
+                <p className="text-sm line-clamp-2">{title}</p>
                 {owner && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                         {owner}

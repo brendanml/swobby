@@ -3,12 +3,14 @@ import { supabase } from "~/lib/supabase/client"
 import { getWantsByUser, type Want } from "~/adapters/listings"
 import { Page } from "~/components/page"
 import { BookTable } from "~/components/book/table"
+import { AddWantPanel } from "~/components/book/add-want-panel"
 
 export default function MyWantsPage() {
     const [wants, setWants] = useState<Want[]>([])
     const [loading, setLoading] = useState(true)
+    const [addOpen, setAddOpen] = useState(false)
 
-    useEffect(() => {
+    function fetchWants() {
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (!user) return setLoading(false)
             getWantsByUser(supabase, user.id).then((data) => {
@@ -16,6 +18,10 @@ export default function MyWantsPage() {
                 setLoading(false)
             })
         })
+    }
+
+    useEffect(() => {
+        fetchWants()
     }, [])
 
     return (
@@ -27,12 +33,17 @@ export default function MyWantsPage() {
             ) : (
                 <BookTable
                     items={wants}
-                    addTo="/wants/books/create"
+                    onAdd={() => setAddOpen(true)}
                     addLabel="Add want"
                     filterPlaceholder="Filter wants..."
                     deleteTo={(id) => `/wants/delete/${id}`}
                 />
             )}
+            <AddWantPanel
+                open={addOpen}
+                onClose={() => setAddOpen(false)}
+                onSuccess={fetchWants}
+            />
         </Page>
     )
 }

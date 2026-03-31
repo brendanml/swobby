@@ -1,7 +1,11 @@
 import { gridDisk, gridDistance } from "h3-js"
 import { supabase } from "~/lib/supabase/client"
 
-const DEFAULT_K_RING = Math.ceil(20 / 1.22)
+const DEFAULT_KM = 20
+
+function kmToKRing(km: number) {
+    return Math.ceil(km / 1.22)
+}
 
 type Book = {
     work_id: string
@@ -24,7 +28,7 @@ export async function findSwaps(userId: string, blockedUserIds: string[] = []): 
         { data: myListings },
         { data: myWants },
     ] = await Promise.all([
-        supabase.from("profiles").select("lat, lng, h3_index").eq("id", userId).single(),
+        supabase.from("profiles").select("lat, lng, h3_index, distance_preference").eq("id", userId).single(),
         supabase.from("listings").select("work_id, books(work_id, title, cover_url, author_name)").eq("user_id", userId).eq("status", "available"),
         supabase.from("wants").select("work_id").eq("user_id", userId),
     ])
@@ -59,22 +63,24 @@ export async function findSwaps(userId: string, blockedUserIds: string[] = []): 
     // Round 3: fetch profiles for all candidates in one query
     const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, name, h3_index")
+        .select("id, name, h3_index, distance_preference")
         .in("id", [...candidateUserIds])
 
     const origin = me.h3_index
-    const myCells = new Set(gridDisk(origin, DEFAULT_K_RING))
+    const myKRing = kmToKRing(me.distance_preference ?? DEFAULT_KM)
+    const myCells = new Set(gridDisk(origin, myKRing))
 
-    const candidateMap = new Map<string, { id: string; name: string | null; h3_index: string }>()
+    const candidateMap = new Map<string, { id: string; name: string | null; h3_index: string; distance_preference: number | null }>()
     for (const p of (profiles ?? [])) {
         if (p.h3_index) candidateMap.set(p.id, p as any)
     }
 
-    // Mutual distance filter
+    // Mutual distance filter: they're in my radius AND I'm within their preference
     const mutualIds = new Set(
         [...candidateMap.values()].filter((c) => {
             if (!myCells.has(c.h3_index)) return false
-            return gridDisk(c.h3_index, DEFAULT_K_RING).includes(origin)
+            const distanceKm = gridDistance(origin, c.h3_index) * 1.22
+            return distanceKm <= (c.distance_preference ?? DEFAULT_KM)
         }).map((c) => c.id)
     )
 

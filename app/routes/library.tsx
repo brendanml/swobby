@@ -3,19 +3,25 @@ import { supabase } from "~/lib/supabase/client"
 import { getListingsByUser, updateListingStatuses, type Listing } from "~/adapters/listings"
 import { Page } from "~/components/page"
 import { BookTable } from "~/components/book/table"
+import { AddListingPanel } from "~/components/book/add-listing-panel"
 import { useUser } from "~/context/user"
 
 export default function LibraryPage() {
     const { user } = useUser()
     const [listings, setListings] = useState<Listing[]>([])
     const [loading, setLoading] = useState(true)
+    const [addOpen, setAddOpen] = useState(false)
 
-    useEffect(() => {
+    function fetchListings() {
         if (!user?.id) return
         getListingsByUser(supabase, user.id).then((data) => {
             setListings(data)
             setLoading(false)
         })
+    }
+
+    useEffect(() => {
+        fetchListings()
     }, [user?.id])
 
     async function handleStatusChange(ids: string[], status: string) {
@@ -32,7 +38,7 @@ export default function LibraryPage() {
             ) : (
                 <BookTable
                     items={listings}
-                    addTo="/listings/books/create"
+                    onAdd={() => setAddOpen(true)}
                     addLabel="Add book"
                     filterPlaceholder="Filter books..."
                     editTo={(id) => `/listings/books/edit/${id}`}
@@ -42,6 +48,11 @@ export default function LibraryPage() {
                     onStatusChange={handleStatusChange}
                 />
             )}
+            <AddListingPanel
+                open={addOpen}
+                onClose={() => setAddOpen(false)}
+                onSuccess={fetchListings}
+            />
         </Page>
     )
 }

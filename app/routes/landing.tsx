@@ -94,21 +94,18 @@ export default function LandingPage() {
             <GeometricBackground />
 
             <div className="relative z-10 flex flex-col items-center gap-6 text-center px-4">
-                <h1 className="font-[--font-display] text-6xl font-semibold tracking-tighter">
+                <h1 className="font-font-sans text-6xl font-semibold tracking-tighter">
                     {APP_NAME}
                 </h1>
                 <p className="text-muted-foreground text-base max-w-sm">
                     Trade books with people near you.
                 </p>
                 <div className="flex flex-col items-center gap-3">
-                    <Button
-                        onClick={() => navigate("/explore")}
-                        className="w-full h-10 text-md"
-                    >
+                    <GoogleSignInButton onClick={signIn} />
+                    <Button onClick={() => navigate("/explore")}>
                         <Compass className="size-5" />
                         Explore
                     </Button>
-                    <GoogleSignInButton onClick={signIn} />
                 </div>
             </div>
         </div>

@@ -174,7 +174,7 @@ function Conversation({
             <div
                 ref={containerRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto p-4 space-y-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]"
+                className="flex-1 overflow-y-auto p-4 space-y-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none] [overflow-anchor:none]"
             >
                 {loadingMore && (
                     <div className="flex justify-center py-2">

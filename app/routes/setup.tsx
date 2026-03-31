@@ -9,14 +9,32 @@ import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { APP_NAME } from "~/utils/config"
+import { Alert, AlertDescription } from "~/components/ui/alert"
+import { FlaskConical } from "lucide-react"
 
 const LocationPicker = lazy(() => import("~/components/location-picker.client"))
 
 const GENRES = [
-    "Fantasy", "Science Fiction", "Mystery", "Thriller", "Romance",
-    "Historical Fiction", "Literary Fiction", "Horror", "Non-Fiction",
-    "Biography", "Self-Help", "Science", "Philosophy", "Humor",
-    "Young Adult", "Children's", "Graphic Novel", "Poetry", "Travel", "Cooking",
+    "Fantasy",
+    "Science Fiction",
+    "Mystery",
+    "Thriller",
+    "Romance",
+    "Historical Fiction",
+    "Literary Fiction",
+    "Horror",
+    "Non-Fiction",
+    "Biography",
+    "Self-Help",
+    "Science",
+    "Philosophy",
+    "Humor",
+    "Young Adult",
+    "Children's",
+    "Graphic Novel",
+    "Poetry",
+    "Travel",
+    "Cooking",
 ]
 
 const STEPS = ["Name", "Location", "Genres"]
@@ -34,13 +52,17 @@ export default function SetupPage() {
 
     function toggleGenre(genre: string) {
         setGenres((prev) =>
-            prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre],
+            prev.includes(genre)
+                ? prev.filter((g) => g !== genre)
+                : [...prev, genre],
         )
     }
 
     async function handleComplete() {
         setSubmitting(true)
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
         if (!user) return
 
         await Promise.all([
@@ -52,7 +74,11 @@ export default function SetupPage() {
                 genres,
                 onboarding_complete: true,
             }),
-            address ? upsertUserSettings(supabase, user.id, { formatted_address: address }) : Promise.resolve(),
+            address
+                ? upsertUserSettings(supabase, user.id, {
+                      formatted_address: address,
+                  })
+                : Promise.resolve(),
         ])
 
         await refresh()
@@ -60,35 +86,51 @@ export default function SetupPage() {
     }
 
     const canNext =
-        step === 0 ? name.trim().length > 0 :
-        step === 1 ? true :
-        true
+        step === 0 ? name.trim().length > 0 : step === 1 ? true : true
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
             <div className="w-full max-w-md flex flex-col gap-8">
                 {/* Header */}
                 <div className="text-center">
-                    <p className="font-[--font-display] text-2xl font-semibold tracking-tighter mb-1">{APP_NAME}</p>
-                    <p className="text-muted-foreground text-sm">Let's get you set up</p>
+                    <p className="font-font-display text-2xl font-semibold tracking-tighter mb-1">
+                        {APP_NAME}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                        Let's get you set up
+                    </p>
                 </div>
 
-                {/* Progress */}
+                <Alert className="bg-warning border-warning-foreground/20 text-warning-foreground [&>svg]:text-warning-foreground">
+                    <FlaskConical className="size-4" />
+                    <AlertDescription>
+                        <strong>swobby is in alpha.</strong> You can sign up
+                        from anywhere, but we recommend being in the{" "}
+                        <strong>Kitchener–Waterloo</strong> area to see real
+                        local users and listings.
+                    </AlertDescription>
+                </Alert>
+
                 <div className="flex items-center gap-2">
                     {STEPS.map((s, i) => (
                         <div key={s} className="flex items-center gap-2 flex-1">
-                            <div className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-primary-foreground" : "bg-muted"}`} />
+                            <div
+                                className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-primary-foreground" : "bg-muted"}`}
+                            />
                         </div>
                     ))}
                 </div>
 
-                {/* Step content */}
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-6 select-none">
                     {step === 0 && (
                         <div className="flex flex-col gap-4">
                             <div>
-                                <h2 className="text-xl font-semibold">What's your name?</h2>
-                                <p className="text-sm text-muted-foreground mt-1">This is how other readers will see you.</p>
+                                <h2 className="text-xl font-semibold">
+                                    What's your name?
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    This is how other readers will see you.
+                                </p>
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="name">Display name</Label>
@@ -97,7 +139,11 @@ export default function SetupPage() {
                                     autoFocus
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && canNext && setStep(1)}
+                                    onKeyDown={(e) =>
+                                        e.key === "Enter" &&
+                                        canNext &&
+                                        setStep(1)
+                                    }
                                     placeholder="Your name"
                                 />
                             </div>
@@ -107,10 +153,19 @@ export default function SetupPage() {
                     {step === 1 && (
                         <div className="flex flex-col gap-4">
                             <div>
-                                <h2 className="text-xl font-semibold">Where are you?</h2>
-                                <p className="text-sm text-muted-foreground mt-1">Used to find books near you. Never shared publicly.</p>
+                                <h2 className="text-xl font-semibold">
+                                    Where are you?
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Used to find books near you. Never shared
+                                    publicly.
+                                </p>
                             </div>
-                            <Suspense fallback={<div className="h-80 bg-muted rounded-lg animate-pulse" />}>
+                            <Suspense
+                                fallback={
+                                    <div className="h-80 bg-muted rounded-lg animate-pulse" />
+                                }
+                            >
                                 <LocationPicker
                                     lat={lat}
                                     lng={lng}
@@ -128,8 +183,12 @@ export default function SetupPage() {
                     {step === 2 && (
                         <div className="flex flex-col gap-4">
                             <div>
-                                <h2 className="text-xl font-semibold">What do you like to read?</h2>
-                                <p className="text-sm text-muted-foreground mt-1">Pick as many as you like.</p>
+                                <h2 className="text-xl font-semibold">
+                                    What do you like to read?
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Pick as many as you like.
+                                </p>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {GENRES.map((genre) => {
@@ -157,7 +216,11 @@ export default function SetupPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-3">
                     {step > 0 && (
-                        <Button variant="outline" onClick={() => setStep((s) => s - 1)} className="flex-1">
+                        <Button
+                            variant="outline"
+                            onClick={() => setStep((s) => s - 1)}
+                            className="flex-1"
+                        >
                             Back
                         </Button>
                     )}

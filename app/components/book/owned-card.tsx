@@ -1,13 +1,9 @@
 import { Link } from "react-router"
 import { Pencil, Trash2, Check } from "lucide-react"
 import { BookCover } from "~/components/book/cover"
+import { Card } from "~/components/ui/card"
 import { cn } from "~/lib/utils"
 
-const STATUS_STYLES: Record<string, string> = {
-    available: "bg-green-100 text-green-700",
-    pending: "bg-yellow-100 text-yellow-700",
-    sold: "bg-muted text-muted-foreground",
-}
 
 interface OwnedBookCardProps {
     coverUrl: string | null
@@ -37,9 +33,9 @@ export function OwnedBookCard({
     onToggleSelect,
 }: OwnedBookCardProps) {
     return (
-        <div
+        <Card
             className={cn(
-                "flex items-center gap-3 bg-muted/50 rounded-xl p-3 transition-colors",
+                "flex items-center gap-3 p-3 transition-colors",
                 selected && "bg-primary/8 border border-primary",
                 !selected && "border border-transparent",
                 className,
@@ -62,7 +58,7 @@ export function OwnedBookCard({
                 <div className="flex items-center gap-1.5">
                     {condition && <p className="text-xs text-muted-foreground capitalize">{condition}</p>}
                     {status && (
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium capitalize ${STATUS_STYLES[status] ?? "bg-muted text-muted-foreground"}`}>
+                        <span className="text-xs px-1.5 py-0.5 rounded-full font-medium capitalize bg-muted text-muted-foreground">
                             {status}
                         </span>
                     )}
@@ -81,6 +77,6 @@ export function OwnedBookCard({
                     <Trash2 className="size-3.5" />
                 </Link>
             </div>
-        </div>
+        </Card>
     )
 }
