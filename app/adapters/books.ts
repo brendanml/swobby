@@ -3,7 +3,7 @@ import { getBookCover } from "./google-books"
 
 export type { Book }
 
-const GOOGLE_COVERS = true
+const GOOGLE_COVERS = false
 
 export async function searchBooks(query: string, offset = 0): Promise<Book[]> {
     const books = await searchOpenLibrary(query, 10, offset)
