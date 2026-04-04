@@ -36,7 +36,7 @@ export function GoogleSignInButton({
                 />
                 <path fill="none" d="M0 0h48v48H0z" />
             </svg>
-            Sign in with Google
+            Continue with Google
         </button>
     )
 }

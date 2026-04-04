@@ -5,14 +5,11 @@ import {
     Outlet,
     Scripts,
     ScrollRestoration,
-    useLocation,
 } from "react-router"
 import { AuthProvider } from "./context/auth"
 import { UserProvider } from "./context/user"
 import { MessagesProvider } from "./context/messages"
 import { OfferProvider } from "./context/offer"
-import { RealtimeChat } from "./components/chat/realtime"
-import { useMessagePopover } from "./hooks/use-message-popover"
 
 import type { Route } from "./+types/root"
 import "./app.css"
@@ -57,18 +54,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-    const showPopover = useMessagePopover()
-
-    return (
-        <>
-            <Outlet />
-            {showPopover && (
-                <div className="fixed bottom-0 right-0 p-4">
-                    <RealtimeChat variant="floating" />
-                </div>
-            )}
-        </>
-    )
+    return <Outlet />
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

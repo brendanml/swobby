@@ -18,6 +18,8 @@ import { useIsMobile } from "~/hooks/use-mobile"
 import { useUser } from "~/context/user"
 import { UserAvatar } from "~/components/user/avatar"
 import { OfferPanel } from "~/components/offer/panel"
+import { RealtimeChat } from "~/components/chat/realtime"
+import { useMessagePopover } from "~/hooks/use-message-popover"
 import { SignInModalProvider, useSignInModal } from "~/context/sign-in-modal"
 import { BANNER_MESSAGE } from "~/config/banner"
 import { Info, X } from "lucide-react"
@@ -150,6 +152,7 @@ function AppSidebar() {
 export default function DashboardLayout() {
     const { session, signIn } = useAuth()
     const { user, loading } = useUser()
+    const showPopover = useMessagePopover()
     const navigate = useNavigate()
     const navRef = useRef<HTMLElement>(null)
 
@@ -204,6 +207,11 @@ export default function DashboardLayout() {
                     </main>
                 </div>
                 <OfferPanel />
+                {showPopover && (
+                    <div className="fixed bottom-0 right-0 p-4 z-50">
+                        <RealtimeChat variant="floating" />
+                    </div>
+                )}
             </SidebarProvider>
         </SignInModalProvider>
     )
