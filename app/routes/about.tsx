@@ -50,12 +50,12 @@ export default function AboutPage() {
                             Brendan Lynch
                         </p>
                         <p>
-                            Moving across the country, I had to offload my whole
-                            collection of books. Everything I listed sold for
-                            pennies on the dollar — and even then, the value
-                            proposition for a meetup just didn't exist for a
-                            single book. Swobby is the platform I wished
-                            existed.
+                            I built Swobby because I lived the problem. Moving
+                            across the country, I had to offload my entire book
+                            collection and watched it go for pennies — not
+                            because the books had no value, but because no
+                            platform made the exchange worth the effort. That
+                            changes now.
                         </p>
                     </div>
                 </div>
