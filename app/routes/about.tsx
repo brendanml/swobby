@@ -13,18 +13,17 @@ export default function AboutPage() {
                 </h1>
                 <div className="flex flex-col gap-4 text-muted-foreground leading-relaxed">
                     <p>
-                        Swobby is open source and free to use. No fees, no
-                        engagement optimizations, just a simple way to exchange
-                        books with people in your neighbourhood.
+                        Swobby is an open source and free to use book exchanging
+                        marketplace. No fees, no engagement optimizations, just
+                        a simple way to upcycle books through your community.
                     </p>
                     <p>
-                        Add what you have, what you're looking for, and have
+                        Add books you have, books you're looking for, and have
                         swobby suggest ideal local exchanges.
                     </p>
                 </div>
             </section>
 
-            {/* Section 2 — Founded */}
             <section className="max-w-3xl mx-auto px-6 py-16 border-t">
                 <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-10">
                     Founded
