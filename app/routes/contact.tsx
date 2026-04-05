@@ -16,10 +16,11 @@ export default function ContactPage() {
                 chat — we'd love to hear from you.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-row  gap-3">
                 <Button size="lg" className="rounded-full gap-2" asChild>
                     <a href="mailto:support@swobby.org">
                         <Mail className="size-5" />
+                        Email
                     </a>
                 </Button>
                 <Button
