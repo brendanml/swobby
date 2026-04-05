@@ -7,7 +7,7 @@ export default function AboutPage() {
         <div className="text-foreground">
             <section className="max-w-2xl mx-auto px-6 pt-30 pb-16">
                 <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4">
-                    Who are we?
+                    What is swobby?
                 </p>
                 <h1 className="text-4xl font-semibold tracking-tight mb-6 leading-snug">
                     A not-for-profit platform for exchanging books locally.
@@ -68,6 +68,11 @@ export default function AboutPage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div className="flex flex-col gap-1.5">
+                        <img
+                            src="/uber-h3.png"
+                            alt="Uber H3"
+                            className="h-6 w-auto object-contain object-left mb-1"
+                        />
                         <p className="font-medium text-sm">H3 Geospatial</p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Uber's hexagonal indexing system powers locality
@@ -77,6 +82,11 @@ export default function AboutPage() {
                         </p>
                     </div>
                     <div className="flex flex-col gap-1.5">
+                        <img
+                            src="/open-library.png"
+                            alt="Open Library"
+                            className="h-6 w-auto object-contain object-left mb-1"
+                        />
                         <p className="font-medium text-sm">Open Library</p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Book metadata is sourced via Open Library Work IDs,
@@ -85,6 +95,11 @@ export default function AboutPage() {
                         </p>
                     </div>
                     <div className="flex flex-col gap-1.5">
+                        <img
+                            src="/supabase.png"
+                            alt="Supabase"
+                            className="h-6 w-auto object-contain object-left mb-1"
+                        />
                         <p className="font-medium text-sm">Supabase</p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Postgres for storage, realtime subscriptions for
@@ -93,6 +108,11 @@ export default function AboutPage() {
                         </p>
                     </div>
                     <div className="flex flex-col gap-1.5">
+                        <img
+                            src="/rr_logo_light.png"
+                            alt="React Router"
+                            className="h-6 w-auto object-contain object-left mb-1"
+                        />
                         <p className="font-medium text-sm">React Router 7</p>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Full-stack SSR with file-based routing, deployed to
