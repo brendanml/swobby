@@ -125,7 +125,7 @@ export default function UserProfilePage({ params }: Route.ComponentProps) {
                                         title={listing.books?.title ?? ""}
                                         coverUrl={listing.books?.cover_url}
                                         href={`/listings/${listing.id}`}
-                                        owner={listing.books?.author_name}
+                                        owner={listing.books?.author_name ?? undefined}
                                     />
                                 ))}
                             </div>

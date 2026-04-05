@@ -4,7 +4,6 @@ import { Button } from "~/components/ui/button"
 export default function AboutPage() {
     return (
         <div className="text-foreground">
-            {/* Section 1 — Who are we */}
             <section className="max-w-2xl mx-auto px-6 pt-30 pb-16">
                 <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-4">
                     Who are we?
@@ -50,12 +49,11 @@ export default function AboutPage() {
                             Brendan Lynch
                         </p>
                         <p>
-                            I built Swobby because I lived the problem. Moving
-                            across the country, I had to offload my entire book
-                            collection and watched it go for pennies — not
-                            because the books had no value, but because no
-                            platform made the exchange worth the effort. That
-                            changes now.
+                            Books are meant to be shared. I built Swobby because
+                            a great book sitting unread on a shelf is a small
+                            tragedy, and the person who'd love it most probably
+                            lives nearby. Upcycle your collection and keep
+                            stories moving through your community.
                         </p>
                     </div>
                 </div>

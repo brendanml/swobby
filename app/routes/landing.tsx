@@ -13,21 +13,20 @@ export default function LandingPage() {
                     alt="Swobby"
                     className="h-24 w-24 drop-shadow-lg"
                 />
-                <h1 className="text-4xl sm:text-5xl tracking-tight leading-tight">
-                    Your next book is
+                <h1 className="text-4xl sm:text-5xl tracking-tight leading-tight text-foreground">
+                    Your <span className=" italic">next</span> book is
                     <br />
                     <span
                         className="whitespace-nowrap text-5xl sm:text-7xl"
                         style={{
                             fontFamily: "cursive",
-                            fontWeight: "bold",
                         }}
                     >
                         next door
                     </span>
                 </h1>
                 <p className="text-muted-foreground text-base whitespace-nowrap">
-                    Swap books with people in your neighbourhood.
+                    Exchange books in your neighbourhood.
                 </p>
                 <div className="flex items-center gap-3">
                     <Button size="lg" className="rounded-full px-8" asChild>
