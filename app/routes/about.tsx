@@ -1,5 +1,6 @@
 import { Link } from "react-router"
 import { Button } from "~/components/ui/button"
+import { ArrowRight, Mail } from "lucide-react"
 
 export default function AboutPage() {
     return (
@@ -24,13 +25,13 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            <section className="max-w-3xl mx-auto px-6 py-16 border-t">
+            <section className="max-w-2xl mx-auto px-6 py-16 border-t">
                 <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-10">
-                    Founded
+                    Founder
                 </p>
                 <div className="flex flex-col sm:flex-row gap-8 items-start">
-                    <div className="shrink-0">
-                        <div className="h-40 w-40 rounded-2xl bg-muted overflow-hidden">
+                    <div className="shrink-0 md:block hidden">
+                        <div className="h-36 w-36 rounded-full bg-muted overflow-hidden">
                             <img
                                 src="/headshot.png"
                                 alt="Founder"
@@ -116,11 +117,17 @@ export default function AboutPage() {
                     one category at a time.
                 </p>
                 <div className="flex gap-3">
-                    <Button asChild>
-                        <Link to="/sign-in">Get Started</Link>
+                    <Button asChild className="rounded-full">
+                        <Link to="/sign-in">
+                            <ArrowRight className="size-4" />
+                            Get Started
+                        </Link>
                     </Button>
-                    <Button variant="outline" asChild>
-                        <Link to="/contact">Get in Touch</Link>
+                    <Button variant="outline" className="rounded-full" asChild>
+                        <Link to="/contact">
+                            <Mail className="size-4" />
+                            Get in Touch
+                        </Link>
                     </Button>
                 </div>
             </section>

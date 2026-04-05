@@ -14,7 +14,14 @@ import { OfferProvider } from "./context/offer"
 import type { Route } from "./+types/root"
 import "./app.css"
 
-export const meta: Route.MetaFunction = () => [{ title: "swobby" }]
+export const meta: Route.MetaFunction = () => [
+    { title: "Swobby — Upcycle Books with People in Your Community" },
+    {
+        name: "description",
+        content:
+            "A local book swapping platform to exchange books with people in your area.",
+    },
+]
 
 export const links: Route.LinksFunction = () => [
     { rel: "preconnect", href: "https://fonts.googleapis.com" },
