@@ -97,8 +97,8 @@ function Conversation({
     const [newMessage, setNewMessage] = useState("")
 
     const inputRef = useCallback((node: HTMLInputElement | null) => {
-        if (node) node.focus()
-    }, [])
+        if (node && !isMobile) node.focus()
+    }, [isMobile])
 
     const prevLengthRef = useRef(0)
     useEffect(() => {
