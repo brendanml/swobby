@@ -29,25 +29,11 @@ export default function AboutPage() {
                 <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-10">
                     Founder
                 </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-8">
-                    Brendan Lynch
-                </h2>
-                <div className="flex flex-col sm:flex-row gap-8 items-start">
-                    <div className="shrink-0 md:block hidden">
-                        <div className="h-40 w-40 rounded-full bg-muted overflow-hidden">
-                            <img
-                                src="/headshot.png"
-                                alt="Founder"
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                    ;(
-                                        e.target as HTMLImageElement
-                                    ).style.display = "none"
-                                }}
-                            />
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-3 text-muted-foreground leading-relaxed">
+                <div className="flex gap-8 items-stretch">
+                    <div className="flex flex-col gap-3 text-muted-foreground leading-relaxed flex-1">
+                        <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                            Brendan Lynch
+                        </h2>
                         <p>
                             Books are meant to be shared. I built Swobby because
                             a great book sitting unread on a shelf is a small
@@ -82,6 +68,16 @@ export default function AboutPage() {
                                 </a>
                             </Button>
                         </div>
+                    </div>
+                    <div className="shrink-0 w-36 rounded-full bg-muted overflow-hidden">
+                        <img
+                            src="/headshot.png"
+                            alt="Founder"
+                            className="h-full w-full object-cover scale-x-[-1]"
+                            onError={(e) => {
+                                ;(e.target as HTMLImageElement).style.display = "none"
+                            }}
+                        />
                     </div>
                 </div>
             </section>
