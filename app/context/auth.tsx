@@ -28,7 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             provider: "google",
             options: { redirectTo: `${window.location.origin}/explore` },
         })
-        console.log("signInWithOAuth", { data, error })
+        console.log("signInWithOAuth url:", data?.url)
+        console.log("signInWithOAuth error:", error?.message)
     }
 
     const signOut = async () => {
