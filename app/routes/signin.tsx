@@ -22,7 +22,7 @@ export default function SignInPage() {
                     <Button
                         variant="default"
                         size="lg"
-                        className=""
+                        className="rounded-full"
                         onClick={() => navigate("/explore")}
                     >
                         <Compass className="size-4" />

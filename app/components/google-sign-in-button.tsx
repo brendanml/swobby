@@ -10,7 +10,7 @@ export function GoogleSignInButton({
     return (
         <button
             onClick={onClick}
-            className={`flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors ${className ?? ""} hover:cursor-pointer`}
+            className={`flex items-center justify-center gap-3 px-4 py-2.5 rounded-full border border-gray-300 bg-white text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors ${className ?? ""} hover:cursor-pointer`}
         >
             <svg
                 width="18"
