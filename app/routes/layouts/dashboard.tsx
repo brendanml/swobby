@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate, useLocation, matchPath } from "react-router"
 import { useRef, useEffect } from "react"
 import { Button } from "~/components/ui/button"
+import { Badge } from "~/components/ui/badge"
 import { NAV_LINKS } from "~/utils/nav-links"
 import { SwobbyWordmark } from "~/components/swobby-wordmark"
 import {
@@ -21,11 +22,7 @@ import { RealtimeChat } from "~/components/chat/realtime"
 import { useMessagePopover } from "~/hooks/use-message-popover"
 import { SignInModalProvider, useSignInModal } from "~/context/sign-in-modal"
 function NavBadgeNotification() {
-    return (
-        <div className="text-xs font-semibold px-2 py-0.5 rounded-full bg-warning text-warning-foreground">
-            beta
-        </div>
-    )
+    return <Badge variant="outline">beta</Badge>
 }
 
 function AppSidebar() {
