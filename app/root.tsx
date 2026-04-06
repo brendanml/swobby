@@ -15,7 +15,7 @@ import type { Route } from "./+types/root"
 import "./app.css"
 
 export const meta: Route.MetaFunction = () => [
-    { title: "Swobby — Upcycle Books with People in Your Community" },
+    { title: "Swobby | Swap Books" },
     {
         name: "description",
         content:
