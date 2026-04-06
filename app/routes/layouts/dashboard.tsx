@@ -189,7 +189,7 @@ export default function DashboardLayout() {
                     <Link to="/" className="flex items-center gap-2">
                         <AppName className="text-xl" />
                     </Link>
-                    <AlphaBadge />
+                    {/* <AlphaBadge /> */}
                     <div className="flex-1" />
                     {session ? (
                         <UserAvatar name={user?.name ?? null} />

@@ -37,7 +37,7 @@ const GENRES = [
     "Cooking",
 ]
 
-const STEPS = ["Name", "Location", "Genres"]
+const STEPS = ["Name", "Location"]
 
 export default function SetupPage() {
     const navigate = useNavigate()
@@ -92,10 +92,8 @@ export default function SetupPage() {
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
             <div className="w-full max-w-md flex flex-col gap-8">
                 {/* Header */}
-                <div className="text-center">
-                    <p className="font-font-display text-2xl font-semibold tracking-tighter mb-1">
-                        {APP_NAME}
-                    </p>
+                <div className="text-center flex flex-col items-center gap-2">
+                    <img src="/swobby.svg" alt={APP_NAME} className="h-10 w-auto" />
                     <p className="text-muted-foreground text-sm">
                         Let's get you set up
                     </p>
@@ -243,15 +241,6 @@ export default function SetupPage() {
                     )}
                 </div>
 
-                {step === 1 && (
-                    <button
-                        type="button"
-                        className="text-xs text-center text-muted-foreground hover:text-foreground transition-colors -mt-4"
-                        onClick={() => setStep(2)}
-                    >
-                        Skip for now
-                    </button>
-                )}
             </div>
         </div>
     )
