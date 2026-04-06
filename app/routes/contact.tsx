@@ -18,7 +18,7 @@ export default function ContactPage() {
 
             <div className="flex flex-row  gap-3">
                 <Button size="lg" className="rounded-full gap-2" asChild>
-                    <a href="mailto:support@swobby.org">
+                    <a href="mailto:hello@swobby.org">
                         <Mail className="size-5" />
                         Email
                     </a>
