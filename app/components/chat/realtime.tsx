@@ -357,7 +357,7 @@ export function RealtimeChat({ variant }: RealtimeChatProps) {
                     >
                         <SheetContent
                             side="bottom"
-                            className="h-[80vh]! p-0 rounded-xl"
+                            className="h-[80vh]! p-0 rounded-t-xl rounded-b-none"
                             showCloseButton={false}
                         >
                             <SheetTitle className="sr-only">Messages</SheetTitle>
