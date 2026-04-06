@@ -69,6 +69,7 @@ interface ConversationProps {
     senderName: string
     onBack: () => void
     onClose?: () => void
+    isMobile?: boolean
 }
 
 function Conversation({
@@ -77,6 +78,7 @@ function Conversation({
     senderName,
     onBack,
     onClose,
+    isMobile,
 }: ConversationProps) {
     const containerRef = useRef<HTMLDivElement>(null)
     const prevScrollHeight = useRef<number>(0)
@@ -320,6 +322,7 @@ export function RealtimeChat({ variant }: RealtimeChatProps) {
                 senderName={user.name ?? "Anonymous"}
                 onBack={() => setActiveConversation(null)}
                 onClose={handleClose}
+                isMobile={isMobile}
             />
         ) : (
             <div className="flex flex-col h-full">
