@@ -29,9 +29,12 @@ export default function AboutPage() {
                 <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-10">
                     Founder
                 </p>
+                <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-8">
+                    Brendan Lynch
+                </h2>
                 <div className="flex flex-col sm:flex-row gap-8 items-start">
                     <div className="shrink-0 md:block hidden">
-                        <div className="h-36 w-36 rounded-full bg-muted overflow-hidden">
+                        <div className="h-40 w-40 rounded-full bg-muted overflow-hidden">
                             <img
                                 src="/headshot.png"
                                 alt="Founder"
@@ -45,9 +48,6 @@ export default function AboutPage() {
                         </div>
                     </div>
                     <div className="flex flex-col gap-3 text-muted-foreground leading-relaxed">
-                        <p className="text-foreground font-medium">
-                            Brendan Lynch
-                        </p>
                         <p>
                             Books are meant to be shared. I built Swobby because
                             a great book sitting unread on a shelf is a small
@@ -55,6 +55,33 @@ export default function AboutPage() {
                             lives nearby. Upcycle your collection and keep
                             stories moving through your community.
                         </p>
+                        <div className="flex gap-2 mt-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-full"
+                                asChild
+                            >
+                                <a href="mailto:hello@brendanml.com">
+                                    <Mail className="size-3.5" />
+                                    hello@brendanml.com
+                                </a>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="rounded-full"
+                                asChild
+                            >
+                                <a
+                                    href="https://brendanml.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    brendanml.com
+                                </a>
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </section>
