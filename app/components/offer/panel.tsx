@@ -168,7 +168,7 @@ export function OfferPanel() {
     }
 
     function handleSubmit() {
-        if (!user || !theirId || !selectedMyIds.size || !selectedTheirIds.size) return
+        if (!user || !theirId || (!selectedMyIds.size && !selectedTheirIds.size)) return
         if (Math.abs(selectedMyIds.size - selectedTheirIds.size) > 1) {
             setConfirmOpen(true)
             return
@@ -188,8 +188,7 @@ export function OfferPanel() {
                     onClick={handleSubmit}
                     disabled={
                         submitting ||
-                        !selectedMyIds.size ||
-                        !selectedTheirIds.size
+                        (!selectedMyIds.size && !selectedTheirIds.size)
                     }
                 >
                     {submitting && <Spinner data-icon="inline-start" />}
