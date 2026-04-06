@@ -52,6 +52,7 @@ export async function getListingsByUser(supabase: SupabaseClient, userId: string
         .from("listings")
         .select("id, condition, description, status, books(work_id, title, author_name, cover_url)")
         .eq("user_id", userId)
+        .neq("status", "sold")
     return (data as unknown as Listing[]) ?? []
 }
 

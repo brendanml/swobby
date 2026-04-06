@@ -1,8 +1,8 @@
 import { Link, Outlet, useNavigate, useLocation, matchPath } from "react-router"
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect } from "react"
 import { Button } from "~/components/ui/button"
 import { NAV_LINKS } from "~/utils/nav-links"
-import { AppName } from "~/components/app-name"
+import { SwobbyWordmark } from "~/components/swobby-wordmark"
 import {
     Sidebar,
     SidebarContent,
@@ -14,64 +14,16 @@ import {
     useSidebar,
 } from "~/components/ui/sidebar"
 import { useAuth } from "~/context/auth"
-import { useIsMobile } from "~/hooks/use-mobile"
 import { useUser } from "~/context/user"
 import { UserAvatar } from "~/components/user/avatar"
 import { OfferPanel } from "~/components/offer/panel"
 import { RealtimeChat } from "~/components/chat/realtime"
 import { useMessagePopover } from "~/hooks/use-message-popover"
 import { SignInModalProvider, useSignInModal } from "~/context/sign-in-modal"
-import { BANNER_MESSAGE } from "~/config/banner"
-import { Info, X } from "lucide-react"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "~/components/ui/popover"
-
-function AlphaBadge() {
-    const [expanded, setExpanded] = useState(false)
-    const isMobile = useIsMobile()
-
-    const infoButton = (
-        <button className="shrink-0 hover:opacity-70 transition-opacity cursor-pointer">
-            <Info className="size-3.5" />
-        </button>
-    )
-
+function NavBadgeNotification() {
     return (
-        <div className="flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full bg-warning text-warning-foreground overflow-hidden transition-all duration-300">
-            <span>alpha</span>
-            {isMobile ? (
-                <Popover>
-                    <PopoverTrigger asChild>{infoButton}</PopoverTrigger>
-                    <PopoverContent
-                        align="start"
-                        className="w-auto text-xs text-muted-foreground"
-                    >
-                        {BANNER_MESSAGE}
-                    </PopoverContent>
-                </Popover>
-            ) : expanded ? (
-                <>
-                    <span className="animate-in fade-in slide-in-from-left-2 duration-300 font-normal">
-                        — {BANNER_MESSAGE}
-                    </span>
-                    <button
-                        onClick={() => setExpanded(false)}
-                        className="shrink-0 hover:opacity-70 transition-opacity cursor-pointer"
-                    >
-                        <X className="size-3" />
-                    </button>
-                </>
-            ) : (
-                <button
-                    onClick={() => setExpanded(true)}
-                    className="shrink-0 hover:opacity-70 transition-opacity cursor-pointer"
-                >
-                    <Info className="size-3.5" />
-                </button>
-            )}
+        <div className="text-xs font-semibold px-2 py-0.5 rounded-full bg-warning text-warning-foreground">
+            beta
         </div>
     )
 }
@@ -85,7 +37,7 @@ function AppSidebar() {
     return (
         <Sidebar>
             <SidebarContent className="p-4 md:pt-16 pt-8">
-                <SidebarMenu className="gap-1">
+                <SidebarMenu className="">
                     {NAV_LINKS.map(
                         ({
                             to,
@@ -187,9 +139,9 @@ export default function DashboardLayout() {
                 >
                     <SidebarTrigger className="text-muted-foreground md:hidden" />
                     <Link to="/" className="flex items-center gap-2">
-                        <AppName className="text-xl" />
+                        <SwobbyWordmark className="text-2xl" />
                     </Link>
-                    {/* <AlphaBadge /> */}
+                    <NavBadgeNotification />
                     <div className="flex-1" />
                     {session ? (
                         <UserAvatar name={user?.name ?? null} />

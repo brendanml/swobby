@@ -93,7 +93,11 @@ export default function SetupPage() {
             <div className="w-full max-w-md flex flex-col gap-8">
                 {/* Header */}
                 <div className="text-center flex flex-col items-center gap-2">
-                    <img src="/swobby.svg" alt={APP_NAME} className="h-10 w-auto" />
+                    <img
+                        src="/swobby.svg"
+                        alt={APP_NAME}
+                        className="h-10 w-auto"
+                    />
                     <p className="text-muted-foreground text-sm">
                         Let's get you set up
                     </p>
@@ -102,10 +106,10 @@ export default function SetupPage() {
                 <Alert className="bg-warning border-warning-foreground/20 text-warning-foreground [&>svg]:text-warning-foreground">
                     <FlaskConical className="size-4" />
                     <AlertDescription>
-                        <strong>swobby is in alpha.</strong> You can sign up
-                        from anywhere, but we recommend being in the{" "}
-                        <strong>Waterloo</strong> area to see real local users
-                        and listings.
+                        <strong>swobby is in beta.</strong> You can sign up from
+                        anywhere, but we recommend being in the{" "}
+                        <strong>Waterloo</strong> area to see local users and
+                        listings.
                     </AlertDescription>
                 </Alert>
 
@@ -240,7 +244,6 @@ export default function SetupPage() {
                         </Button>
                     )}
                 </div>
-
             </div>
         </div>
     )

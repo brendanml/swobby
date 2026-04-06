@@ -36,6 +36,7 @@ export async function findNearbyBooks(userId: string, blockedUserIds: string[] =
         .from("listings")
         .select("id, user_id, books(work_id, title, cover_url, author_name)")
         .in("user_id", nearbyIds)
+        .neq("status", "sold")
 
     return (data ?? []).flatMap((row: any) => {
         const book = row.books
@@ -73,6 +74,7 @@ export async function findNearbyBooksForGuest(lat: number, lng: number, blockedU
         .from("listings")
         .select("id, user_id, books(work_id, title, cover_url, author_name)")
         .in("user_id", nearbyIds)
+        .neq("status", "sold")
 
     return (data ?? []).flatMap((row: any) => {
         const book = row.books

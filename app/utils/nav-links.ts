@@ -10,6 +10,8 @@ export type NavLink = {
     desktop: boolean
     /** Extra path patterns that should also activate this nav item */
     activeFor?: string[]
+    /** Whether the message popover should show on this page (default true) */
+    popover?: boolean
 }
 
 export const EXPLORE: NavLink = {
@@ -17,7 +19,7 @@ export const EXPLORE: NavLink = {
     activeFor: ["/explore", "/listings/:id"],
 }
 export const MESSAGES: NavLink = {
-    to: "/messages", label: "Messages", icon: MessageCircle, auth: true, mobile: false, desktop: true,
+    to: "/messages", label: "Messages", icon: MessageCircle, auth: true, mobile: false, desktop: true, popover: false,
 }
 export const MY_LIBRARY: NavLink = {
     to: "/library", label: "My Library", icon: BookOpen, auth: true, mobile: true, desktop: true,

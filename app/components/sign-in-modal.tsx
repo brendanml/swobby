@@ -8,7 +8,7 @@ import {
     DialogFooter,
 } from "~/components/ui/dialog"
 import { Button } from "~/components/ui/button"
-import { AppName } from "~/components/app-name"
+import { SwobbyWordmark } from "~/components/swobby-wordmark"
 
 interface SignInModalProps {
     open: boolean
@@ -23,7 +23,7 @@ export function SignInModal({ open, onClose }: SignInModalProps) {
             <DialogContent showCloseButton={false} className="text-center items-center">
                 <DialogHeader className="items-center">
                     <DialogTitle asChild>
-                        <AppName />
+                        <SwobbyWordmark />
                     </DialogTitle>
                     <DialogDescription>
                         Sign in to access this page.
