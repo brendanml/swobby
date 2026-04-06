@@ -129,7 +129,7 @@ export default function DashboardLayout() {
 
     return (
         <SignInModalProvider>
-            <SidebarProvider className="flex-col h-screen w-full overflow-hidden">
+            <SidebarProvider className="flex-col h-[100dvh] w-full overflow-hidden">
                 <nav
                     ref={navRef}
                     className="flex items-center gap-2 px-4 py-2 border-b w-full shrink-0 relative z-20 bg-background"
