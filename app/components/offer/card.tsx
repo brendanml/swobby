@@ -1,4 +1,5 @@
 import { Link } from "react-router"
+import { bookImage } from "~/lib/book-image"
 import { ArrowUpRight } from "lucide-react"
 import { supabase } from "~/lib/supabase/client"
 import { BookCover } from "~/components/book/cover"
@@ -62,7 +63,7 @@ export function OfferCard({
                             <p className={`text-xs ${mutedText}`}>You give</p>
                             <div className="flex flex-wrap gap-1">
                                 {myItems.map((item) => (
-                                    <BookCover key={item.listings.id} size="xs" url={item.listings.books?.cover_url ?? null} title={item.listings.books?.title ?? ""} />
+                                    <BookCover key={item.listings.id} size="xs" url={bookImage(item.listings.books)} title={item.listings.books?.title ?? ""} />
                                 ))}
                             </div>
                         </div>
@@ -70,7 +71,7 @@ export function OfferCard({
                             <p className={`text-xs ${mutedText}`}>You get</p>
                             <div className="flex flex-wrap gap-1">
                                 {theirItems.map((item) => (
-                                    <BookCover key={item.listings.id} size="xs" url={item.listings.books?.cover_url ?? null} title={item.listings.books?.title ?? ""} />
+                                    <BookCover key={item.listings.id} size="xs" url={bookImage(item.listings.books)} title={item.listings.books?.title ?? ""} />
                                 ))}
                             </div>
                         </div>

@@ -7,6 +7,7 @@ import {
 } from "~/adapters/exchanges"
 import type { Exchange, Offer } from "~/adapters/exchanges"
 import { Page } from "~/components/page"
+import { bookImage } from "~/lib/book-image"
 import { Button } from "~/components/ui/button"
 import { useAuth } from "~/context/auth"
 import type { Route } from "./+types/detail"
@@ -118,13 +119,9 @@ export default function ExchangePage({ params }: Route.ComponentProps) {
                                                 key={item.listings?.id}
                                                 className="flex items-center gap-2"
                                             >
-                                                {item.listings?.books
-                                                    ?.cover_url && (
+                                                {bookImage(item.listings?.books) && (
                                                     <img
-                                                        src={
-                                                            item.listings.books
-                                                                .cover_url
-                                                        }
+                                                        src={bookImage(item.listings?.books)!}
                                                         alt=""
                                                         className="w-8 h-10 object-cover rounded"
                                                     />
@@ -160,13 +157,9 @@ export default function ExchangePage({ params }: Route.ComponentProps) {
                                                 key={item.listings?.id}
                                                 className="flex items-center gap-2"
                                             >
-                                                {item.listings?.books
-                                                    ?.cover_url && (
+                                                {bookImage(item.listings?.books) && (
                                                     <img
-                                                        src={
-                                                            item.listings.books
-                                                                .cover_url
-                                                        }
+                                                        src={bookImage(item.listings?.books)!}
                                                         alt=""
                                                         className="w-8 h-10 object-cover rounded"
                                                     />

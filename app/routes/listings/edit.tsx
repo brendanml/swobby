@@ -8,6 +8,7 @@ import { Textarea } from "~/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select"
 import { BookCover } from "~/components/book/cover"
 import { getListingById, updateListing } from "~/adapters/listings"
+import { bookImage } from "~/lib/book-image"
 import type { Route } from "./+types/edit"
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -41,7 +42,7 @@ export default function EditListing({ loaderData }: Route.ComponentProps) {
                 <input type="hidden" name="condition" value={condition} />
 
                 <div className="flex items-center gap-3 border rounded-xl p-3">
-                    <BookCover size="sm" url={listing.books?.cover_url ?? null} title={listing.books?.title ?? ""} />
+                    <BookCover size="sm" url={bookImage(listing.books)} title={listing.books?.title ?? ""} />
                     <div>
                         <p className="font-medium text-sm">{listing.books?.title}</p>
                         {listing.books?.author_name && (

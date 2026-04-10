@@ -14,6 +14,9 @@ export default function AboutPage() {
                 </h1>
                 <div className="flex flex-col gap-4 text-muted-foreground leading-relaxed">
                     <p>
+                        Swobby is the place to swap books within your community. It's open source, free to use, and free of any engagement optimizations.
+                    </p>
+                    <p>
                         Swobby is an open source and free to use book exchanging
                         marketplace. No fees, no engagement optimizations, just
                         a simple way to upcycle books through your community.

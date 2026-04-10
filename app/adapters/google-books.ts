@@ -12,8 +12,8 @@ export async function getBookCover(
         if (!response.ok) return null
         const data = await response.json()
         const links = data.items?.[0]?.volumeInfo?.imageLinks
-        const thumbnail = links?.thumbnail ?? links?.smallThumbnail ?? null
-        return thumbnail ? thumbnail.replace("http://", "https://") : null
+        const image = links?.large ?? links?.medium ?? links?.small ?? links?.thumbnail ?? links?.smallThumbnail ?? null
+        return image ? image.replace("http://", "https://") : null
     } catch {
         return null
     }
@@ -23,7 +23,7 @@ export interface GoogleBook {
     title: string
     author_name?: string
     first_publish_year?: number
-    cover_url?: string | null
+    google_image?: string | null
     isbn?: string
 }
 
@@ -52,8 +52,8 @@ export async function searchBooks(
             first_publish_year: info.publishedDate
                 ? parseInt(info.publishedDate)
                 : undefined,
-            cover_url:
-                info.imageLinks?.thumbnail?.replace("http://", "https://") ??
+            google_image:
+                (info.imageLinks?.large ?? info.imageLinks?.medium ?? info.imageLinks?.small ?? info.imageLinks?.thumbnail)?.replace("http://", "https://") ??
                 null,
             isbn,
         }

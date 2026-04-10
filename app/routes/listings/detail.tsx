@@ -5,6 +5,7 @@ import { supabase } from "~/lib/supabase/client"
 import { getListingDetail, getListingsByUser, type ListingDetail } from "~/adapters/listings"
 import { Page } from "~/components/page"
 import { BookCover } from "~/components/book/cover"
+import { bookImage } from "~/lib/book-image"
 import { UserProfile } from "~/components/user/profile"
 import { AuthProtectedButton } from "~/components/auth-protected-button"
 import { useMessages } from "~/context/messages"
@@ -28,7 +29,7 @@ function MobileListing({ listing, distanceKm, onMessage, onOffer }: ListingViewP
             <div className="flex gap-4">
                 <BookCover
                     size="lg"
-                    url={listing.books?.cover_url ?? null}
+                    url={bookImage(listing.books)}
                     title={listing.books?.title ?? ""}
                     className="shrink-0"
                 />
@@ -82,7 +83,7 @@ function DesktopListing({ listing, distanceKm, listingCount, onMessage, onOffer 
         <div className="flex gap-10 w-full">
             <BookCover
                 size="lg"
-                url={listing.books?.cover_url ?? null}
+                url={bookImage(listing.books)}
                 title={listing.books?.title ?? ""}
                 className="w-80 h-full shrink-0"
             />

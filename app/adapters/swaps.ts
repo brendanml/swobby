@@ -10,7 +10,8 @@ function kmToKRing(km: number) {
 type Book = {
     work_id: string
     title: string
-    cover_url: string | null
+    open_library_image: string | null
+    google_image: string | null
     author_name: string | null
 }
 
@@ -29,7 +30,7 @@ export async function findSwaps(userId: string, blockedUserIds: string[] = []): 
         { data: myWants },
     ] = await Promise.all([
         supabase.from("profiles").select("lat, lng, h3_index, distance_preference").eq("id", userId).single(),
-        supabase.from("listings").select("work_id, books(work_id, title, cover_url, author_name)").eq("user_id", userId).eq("status", "available"),
+        supabase.from("listings").select("work_id, books(work_id, title, open_library_image, google_image, author_name)").eq("user_id", userId).eq("status", "available"),
         supabase.from("wants").select("work_id").eq("user_id", userId),
     ])
 
@@ -46,7 +47,7 @@ export async function findSwaps(userId: string, blockedUserIds: string[] = []): 
             ? supabase.from("wants").select("user_id, work_id").in("work_id", myListingIds).neq("user_id", userId)
             : Promise.resolve({ data: [] }),
         myWantIds.size
-            ? supabase.from("listings").select("user_id, work_id, books(work_id, title, cover_url, author_name)").in("work_id", [...myWantIds]).neq("user_id", userId).eq("status", "available")
+            ? supabase.from("listings").select("user_id, work_id, books(work_id, title, open_library_image, google_image, author_name)").in("work_id", [...myWantIds]).neq("user_id", userId).eq("status", "available")
             : Promise.resolve({ data: [] }),
     ])
 

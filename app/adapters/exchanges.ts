@@ -5,7 +5,7 @@ export type ExchangeSummary = {
     status: string
     created_at: string
     otherUserName: string | null
-    books: Array<{ title: string; cover_url: string | null }>
+    books: Array<{ title: string; open_library_image: string | null; google_image: string | null }>
 }
 
 export async function getExchangesByUser(supabase: SupabaseClient, userId: string): Promise<ExchangeSummary[]> {
@@ -22,7 +22,7 @@ export async function getExchangesByUser(supabase: SupabaseClient, userId: strin
         .select(`id, status, created_at, accepted_offer_id, initiator_id,
             offers!offers_exchange_id_fkey(id, proposer_id,
                 proposer:profiles!offers_proposer_id_fkey(name),
-                offer_items(side, listings(id, books(title, cover_url))))`)
+                offer_items(side, listings(id, books(title, open_library_image, google_image))))`)
         .in("conversation_id", convoIds)
         .order("created_at", { ascending: false })
 
@@ -51,7 +51,7 @@ export type OfferItem = {
     side: "proposer" | "recipient"
     listings: {
         id: string
-        books: { title: string; cover_url: string | null; author_name: string | null } | null
+        books: { title: string; open_library_image: string | null; google_image: string | null; author_name: string | null } | null
     }
 }
 
@@ -74,7 +74,7 @@ export async function getExchangeWithOffers(supabase: SupabaseClient, exchangeId
             .from("offers")
             .select(`id, proposer_id, created_at,
                 proposer:profiles!offers_proposer_id_fkey(name),
-                offer_items(side, listings(id, books(title, cover_url, author_name)))`)
+                offer_items(side, listings(id, books(title, open_library_image, google_image, author_name)))`)
             .eq("exchange_id", exchangeId)
             .order("created_at", { ascending: true }),
     ])

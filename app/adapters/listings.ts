@@ -3,7 +3,8 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 type BookData = {
     work_id: string
     title: string
-    cover_url?: string | null
+    open_library_image?: string | null
+    google_image?: string | null
     author_name?: string | null
     first_publish_year?: number | string | null
 }
@@ -12,7 +13,8 @@ export async function upsertBook(supabase: SupabaseClient, book: BookData) {
     return supabase.from("books").upsert({
         work_id: book.work_id,
         title: book.title,
-        cover_url: book.cover_url ?? null,
+        open_library_image: book.open_library_image ?? null,
+        google_image: book.google_image ?? null,
         author_name: book.author_name ?? null,
         first_publish_year: book.first_publish_year ?? null,
     }, { onConflict: "work_id" })
@@ -43,14 +45,15 @@ export type Listing = {
         work_id: string
         title: string
         author_name: string | null
-        cover_url: string | null
+        open_library_image: string | null
+        google_image: string | null
     } | null
 }
 
 export async function getListingsByUser(supabase: SupabaseClient, userId: string): Promise<Listing[]> {
     const { data } = await supabase
         .from("listings")
-        .select("id, condition, description, status, books(work_id, title, author_name, cover_url)")
+        .select("id, condition, description, status, books(work_id, title, author_name, open_library_image, google_image)")
         .eq("user_id", userId)
         .neq("status", "sold")
     return (data as unknown as Listing[]) ?? []
@@ -61,14 +64,15 @@ export type Want = {
     books: {
         title: string
         author_name: string | null
-        cover_url: string | null
+        open_library_image: string | null
+        google_image: string | null
     } | null
 }
 
 export async function getWantsByUser(supabase: SupabaseClient, userId: string): Promise<Want[]> {
     const { data } = await supabase
         .from("wants")
-        .select("id, books(title, author_name, cover_url)")
+        .select("id, books(title, author_name, open_library_image, google_image)")
         .eq("user_id", userId)
     return (data as unknown as Want[]) ?? []
 }
@@ -79,13 +83,13 @@ export type ListingDetail = {
     description: string | null
     user_id: string
     user: { name: string | null; h3_index: string | null } | null
-    books: { work_id: string; title: string; author_name: string | null; cover_url: string | null } | null
+    books: { work_id: string; title: string; author_name: string | null; open_library_image: string | null; google_image: string | null } | null
 }
 
 export async function getListingDetail(supabase: SupabaseClient, id: string): Promise<ListingDetail | null> {
     const { data } = await supabase
         .from("listings")
-        .select("id, condition, description, user_id, books(work_id, title, author_name, cover_url), profiles!user_id(name, h3_index)")
+        .select("id, condition, description, user_id, books(work_id, title, author_name, open_library_image, google_image), profiles!user_id(name, h3_index)")
         .eq("id", id)
         .single()
     if (!data) return null
@@ -97,7 +101,7 @@ export async function getListingDetail(supabase: SupabaseClient, id: string): Pr
 export async function getListingById(supabase: SupabaseClient, id: string): Promise<Listing | null> {
     const { data } = await supabase
         .from("listings")
-        .select("id, condition, description, status, books(work_id, title, author_name, cover_url)")
+        .select("id, condition, description, status, books(work_id, title, author_name, open_library_image, google_image)")
         .eq("id", id)
         .single()
     return (data as unknown as Listing) ?? null
@@ -126,7 +130,7 @@ export async function updateListing(supabase: SupabaseClient, id: string, { cond
 export async function getWantById(supabase: SupabaseClient, id: string): Promise<Want | null> {
     const { data } = await supabase
         .from("wants")
-        .select("id, books(title, author_name, cover_url)")
+        .select("id, books(title, author_name, open_library_image, google_image)")
         .eq("id", id)
         .single()
     return (data as unknown as Want) ?? null

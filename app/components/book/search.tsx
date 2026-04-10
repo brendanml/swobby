@@ -4,6 +4,7 @@ import { Input } from "~/components/ui/input"
 import { Spinner } from "~/components/ui/spinner"
 import { BookCover } from "~/components/book/cover"
 import type { Book } from "~/adapters/books"
+import { bookImage } from "~/lib/book-image"
 
 const PAGE_SIZE = 10
 
@@ -122,7 +123,7 @@ export function BookSearch({ onSelect }: { onSelect: (book: Book) => void }) {
                                 >
                                     <BookCover
                                         size="xs"
-                                        url={book.cover_url ?? null}
+                                        url={bookImage(book)}
                                         title={book.title}
                                     />
                                     <div className="flex flex-col min-w-0">

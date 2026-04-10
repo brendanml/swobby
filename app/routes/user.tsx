@@ -7,6 +7,7 @@ import { useMessages } from "~/context/messages"
 import { useOffer } from "~/context/offer"
 import { Page } from "~/components/page"
 import { BookCard } from "~/components/book/card"
+import { bookImage } from "~/lib/book-image"
 import { UserProfile } from "~/components/user/profile"
 import { AuthProtectedButton } from "~/components/auth-protected-button"
 import type { Route } from "./+types/user"
@@ -123,7 +124,7 @@ export default function UserProfilePage({ params }: Route.ComponentProps) {
                                     <BookCard
                                         key={listing.id}
                                         title={listing.books?.title ?? ""}
-                                        coverUrl={listing.books?.cover_url}
+                                        coverUrl={bookImage(listing.books)}
                                         href={`/listings/${listing.id}`}
                                         owner={listing.books?.author_name ?? undefined}
                                     />

@@ -11,7 +11,7 @@ type OfferItem = {
     side: "proposer" | "recipient"
     listings: {
         id: string
-        books: { title: string; cover_url: string | null; author_name: string | null } | null
+        books: { title: string; open_library_image: string | null; google_image: string | null; author_name: string | null } | null
     }
 }
 
@@ -40,7 +40,7 @@ const MESSAGE_SELECT = `
     id, content, sender_id, offer_id, created_at,
     profiles(name),
     offers(id, conversation_id, proposer_id, recipient_id, status,
-        offer_items(side, listings(id, books(title, cover_url, author_name)))
+        offer_items(side, listings(id, books(title, open_library_image, google_image, author_name)))
     )`
 
 function mapMessage(row: any): ChatMessage {

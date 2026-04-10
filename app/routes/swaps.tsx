@@ -5,6 +5,7 @@ import { useUser } from "~/context/user"
 import { useMessages } from "~/context/messages"
 import { Button } from "~/components/ui/button"
 import { Page } from "~/components/page"
+import { bookImage } from "~/lib/book-image"
 
 export default function Swaps() {
     const { user, blockedUserIds } = useUser()
@@ -76,9 +77,9 @@ export default function Swaps() {
                                                 key={book.work_id}
                                                 className="flex items-center gap-2 text-sm"
                                             >
-                                                {book.cover_url && (
+                                                {bookImage(book) && (
                                                     <img
-                                                        src={book.cover_url}
+                                                        src={bookImage(book)!}
                                                         alt={book.title}
                                                         className="w-8 h-10 object-cover rounded"
                                                     />
@@ -99,9 +100,9 @@ export default function Swaps() {
                                                 key={book.work_id}
                                                 className="flex items-center gap-2 text-sm"
                                             >
-                                                {book.cover_url && (
+                                                {bookImage(book) && (
                                                     <img
-                                                        src={book.cover_url}
+                                                        src={bookImage(book)!}
                                                         alt={book.title}
                                                         className="w-8 h-10 object-cover rounded"
                                                     />

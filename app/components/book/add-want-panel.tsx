@@ -8,6 +8,7 @@ import { BookCover } from "~/components/book/cover"
 import { Button } from "~/components/ui/button"
 import { Spinner } from "~/components/ui/spinner"
 import type { Book } from "~/adapters/books"
+import { bookImage } from "~/lib/book-image"
 
 interface AddWantPanelProps {
     open: boolean
@@ -32,7 +33,8 @@ export function AddWantPanel({ open, onClose, onSuccess }: AddWantPanelProps) {
             await upsertBook(supabase, {
                 work_id: selectedBook.work_id,
                 title: selectedBook.title,
-                cover_url: selectedBook.cover_url,
+                open_library_image: selectedBook.open_library_image,
+                google_image: selectedBook.google_image,
                 author_name: selectedBook.author_name,
                 first_publish_year: selectedBook.first_publish_year,
             })
@@ -64,7 +66,7 @@ export function AddWantPanel({ open, onClose, onSuccess }: AddWantPanelProps) {
 
             {selectedBook && (
                 <div className="flex items-center gap-3 p-3 rounded-lg border">
-                    <BookCover size="sm" url={selectedBook.cover_url ?? null} title={selectedBook.title} />
+                    <BookCover size="sm" url={bookImage(selectedBook)} title={selectedBook.title} />
                     <div className="flex flex-col gap-0.5 min-w-0">
                         <p className="text-sm font-medium leading-tight">{selectedBook.title}</p>
                         {selectedBook.author_name && (

@@ -1,5 +1,6 @@
 import { BookCover } from "~/components/book/cover"
 import { useIsMobile, useIsTablet } from "~/hooks/use-mobile"
+import { bookImage, type ImageProvider } from "~/lib/book-image"
 
 const BOOK_DIMS = {
     xs: { w: 32, h: 44 },
@@ -9,12 +10,13 @@ const BOOK_DIMS = {
 }
 
 interface BookStackProps {
-    books: { work_id: string; title: string; cover_url: string | null }[]
+    books: { work_id: string; title: string; open_library_image: string | null; google_image: string | null }[]
     size?: "xs" | "sm" | "md" | "lg"
     maxVisible?: number
+    provider?: ImageProvider
 }
 
-export function BookStack({ books, size = "md", maxVisible: maxVisibleProp }: BookStackProps) {
+export function BookStack({ books, size = "md", maxVisible: maxVisibleProp, provider }: BookStackProps) {
     const isMobile = useIsMobile()
     const isTablet = useIsTablet()
     const maxVisible = maxVisibleProp ?? (isMobile ? 2 : isTablet ? 3 : 5)
@@ -38,7 +40,7 @@ export function BookStack({ books, size = "md", maxVisible: maxVisibleProp }: Bo
                         className={`absolute bottom-0${i < visible.length - 1 ? " filter-[drop-shadow(4px_0px_2px_rgba(0,0,0,0.5))]" : ""}`}
                         style={{ left: `${i * step}px`, zIndex: visible.length - i }}
                     >
-                        <BookCover size={size} url={b.cover_url} title={b.title} />
+                        <BookCover size={size} url={bookImage(b, provider)} title={b.title} />
                     </div>
                 ))}
             </div>

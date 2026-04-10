@@ -5,7 +5,8 @@ export interface Book {
     first_publish_year?: number
     cover_i: number
     work_id: string
-    cover_url?: string | null
+    open_library_image?: string | null
+    google_image?: string | null
 }
 
 function olHeaders(): HeadersInit {
@@ -32,7 +33,8 @@ export async function searchBooks(query: string, limit = 10, offset = 0): Promis
         author_name: doc.author_name?.[0],
         first_publish_year: doc.first_publish_year,
         work_id: doc.key?.replace("/works/", "") ?? "",
-        cover_url: doc.cover_i ? getBookCoverUrl(doc.cover_i) : null,
+        open_library_image: doc.cover_i ? getBookCoverUrl(doc.cover_i, "L") : null,
+        google_image: null,
     }))
 }
 

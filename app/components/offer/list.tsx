@@ -15,6 +15,7 @@ import {
     TableRow,
 } from "~/components/ui/table"
 import type { OfferSummary } from "~/adapters/offers"
+import { bookImage } from "~/lib/book-image"
 
 const STATUS_OPTIONS = ["pending", "accepted", "declined", "cancelled"] as const
 
@@ -48,7 +49,8 @@ function toStackBooks(items: OfferSummary["offer_items"]) {
     return items.map((i) => ({
         work_id: i.work_id ?? i.listings?.id ?? "",
         title: i.books?.title ?? "",
-        cover_url: i.books?.cover_url ?? null,
+        open_library_image: i.books?.open_library_image ?? null,
+        google_image: i.books?.google_image ?? null,
     }))
 }
 

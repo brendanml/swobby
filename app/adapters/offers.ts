@@ -68,7 +68,7 @@ export async function createOffer({
         .select(`id, content, sender_id, offer_id, created_at,
             profiles(name),
             offers(id, conversation_id, proposer_id, recipient_id, status,
-                offer_items(side, work_id, books:books!offer_items_work_id_fkey(title, cover_url, author_name), listings(id))
+                offer_items(side, work_id, books:books!offer_items_work_id_fkey(title, open_library_image, google_image, author_name), listings(id))
             )`)
         .eq("id", msg.id)
         .single()
@@ -107,7 +107,7 @@ export type OfferSummary = {
     offer_items: Array<{
         side: "proposer" | "recipient"
         work_id: string | null
-        books: { title: string; cover_url: string | null } | null
+        books: { title: string; open_library_image: string | null; google_image: string | null } | null
         listings: { id: string } | null
     }>
 }
@@ -119,7 +119,7 @@ export async function getOffersByUser(supabase: SupabaseClient, userId: string):
             id, status, created_at, proposer_id, recipient_id,
             proposer:profiles!offers_proposer_id_fkey(name),
             recipient:profiles!offers_recipient_id_fkey(name),
-            offer_items(side, work_id, books:books!offer_items_work_id_fkey(title, cover_url), listings(id))
+            offer_items(side, work_id, books:books!offer_items_work_id_fkey(title, open_library_image, google_image), listings(id))
         `)
         .or(`proposer_id.eq.${userId},recipient_id.eq.${userId}`)
         .order("created_at", { ascending: false })
@@ -143,7 +143,7 @@ export type OfferDetail = {
     offer_items: Array<{
         side: "proposer" | "recipient"
         work_id: string | null
-        books: { work_id: string; title: string; cover_url: string | null; author_name: string | null } | null
+        books: { work_id: string; title: string; open_library_image: string | null; google_image: string | null; author_name: string | null } | null
         listings: { id: string } | null
     }>
 }
@@ -155,7 +155,7 @@ export async function getOfferById(supabase: SupabaseClient, offerId: string): P
             id, status, created_at, proposer_id, recipient_id,
             proposer:profiles!offers_proposer_id_fkey(name, h3_index),
             recipient:profiles!offers_recipient_id_fkey(name, h3_index),
-            offer_items(side, work_id, books:books!offer_items_work_id_fkey(work_id, title, cover_url, author_name), listings(id))
+            offer_items(side, work_id, books:books!offer_items_work_id_fkey(work_id, title, open_library_image, google_image, author_name), listings(id))
         `)
         .eq("id", offerId)
         .maybeSingle()

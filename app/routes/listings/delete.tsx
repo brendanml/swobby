@@ -5,6 +5,7 @@ import { MY_LIBRARY } from "~/utils/nav-links"
 import { Button } from "~/components/ui/button"
 import { BookCover } from "~/components/book/cover"
 import { getListingById, deleteListing } from "~/adapters/listings"
+import { bookImage } from "~/lib/book-image"
 import type { Route } from "./+types/delete"
 
 export async function loader({ request, params }: Route.LoaderArgs) {
@@ -27,7 +28,7 @@ export default function DeleteListing({ loaderData }: Route.ComponentProps) {
         <Page>
             <div className="flex flex-col gap-6 max-w-md">
                 <div className="flex items-center gap-3 bg-muted/50 rounded-xl p-3">
-                    <BookCover size="sm" url={listing.books?.cover_url ?? null} title={listing.books?.title ?? ""} />
+                    <BookCover size="sm" url={bookImage(listing.books)} title={listing.books?.title ?? ""} />
                     <div>
                         <p className="font-medium text-sm">{listing.books?.title}</p>
                         {listing.books?.author_name && (

@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button"
 import { FilterSearch } from "~/components/filter-search"
 import { BookCover } from "~/components/book/cover"
 import { OwnedBookCard } from "~/components/book/owned-card"
+import { bookImage } from "~/lib/book-image"
 import {
     Table,
     TableBody,
@@ -19,7 +20,8 @@ export interface BookTableItem {
     books: {
         title: string
         author_name: string | null
-        cover_url: string | null
+        open_library_image: string | null
+        google_image: string | null
     } | null
     condition?: string
     description?: string | null
@@ -231,7 +233,7 @@ export function BookTable({
                 {filtered.map((item) => (
                     <OwnedBookCard
                         key={item.id}
-                        coverUrl={item.books?.cover_url ?? null}
+                        coverUrl={bookImage(item.books)}
                         title={item.books?.title ?? ""}
                         authorName={item.books?.author_name}
                         condition={item.condition}
@@ -298,7 +300,7 @@ export function BookTable({
                                 <TableCell>
                                     <BookCover
                                         size="xs"
-                                        url={item.books?.cover_url ?? null}
+                                        url={bookImage(item.books)}
                                         title={item.books?.title ?? ""}
                                     />
                                 </TableCell>

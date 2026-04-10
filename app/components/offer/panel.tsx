@@ -5,6 +5,7 @@ import { useOffer } from "~/context/offer"
 import { useUser } from "~/context/user"
 import { useMessages } from "~/context/messages"
 import { getListingsByUser, type Listing } from "~/adapters/listings"
+import { bookImage } from "~/lib/book-image"
 import { createOffer } from "~/adapters/offers"
 import { Panel } from "~/components/panel"
 import { FilterSearch } from "~/components/filter-search"
@@ -49,10 +50,10 @@ function ListingOption({
                     />
                 )}
             </div>
-            {listing.books?.cover_url && (
+            {bookImage(listing.books) && (
                 <img
-                    src={listing.books.cover_url}
-                    alt={listing.books.title ?? ""}
+                    src={bookImage(listing.books)!}
+                    alt={listing.books?.title ?? ""}
                     className="w-10 h-14 object-cover rounded"
                 />
             )}

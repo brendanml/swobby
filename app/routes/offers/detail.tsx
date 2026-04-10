@@ -11,6 +11,7 @@ import { Page } from "~/components/page"
 import { Button } from "~/components/ui/button"
 import { Spinner } from "~/components/ui/spinner"
 import { BookCover } from "~/components/book/cover"
+import { bookImage } from "~/lib/book-image"
 import { NameAvatar } from "~/components/user/name-avatar"
 import { CheckCheck, MapPin, MessageCircle } from "lucide-react"
 import type { Route } from "./+types/detail"
@@ -41,7 +42,7 @@ function BookRow({
         <div className="flex items-center gap-3">
             <BookCover
                 size="sm"
-                url={book.cover_url}
+                url={bookImage(book)}
                 title={book.title}
                 author={book.author_name}
             />

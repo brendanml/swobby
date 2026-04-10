@@ -3,6 +3,7 @@ import { Link } from "react-router"
 import { supabase } from "~/lib/supabase/client"
 import { getExchangesByUser, type ExchangeSummary } from "~/adapters/exchanges"
 import { Page } from "~/components/page"
+import { bookImage } from "~/lib/book-image"
 
 function StatusBadge({ status }: { status: string }) {
     const styles =
@@ -66,10 +67,10 @@ export default function Exchanges() {
                             {ex.books.length > 0 && (
                                 <div className="flex gap-2">
                                     {ex.books.slice(0, 4).map((book, i) =>
-                                        book.cover_url ? (
+                                        bookImage(book) ? (
                                             <img
                                                 key={i}
-                                                src={book.cover_url}
+                                                src={bookImage(book)!}
                                                 alt={book.title}
                                                 className="w-8 h-10 object-cover rounded"
                                             />

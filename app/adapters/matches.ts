@@ -16,7 +16,8 @@ export type NearbyBook = {
     listingId: string
     work_id: string
     title: string
-    cover_url: string | null
+    open_library_image: string | null
+    google_image: string | null
     author_name: string | null
     userId: string
     userName: string | null
@@ -34,14 +35,14 @@ export async function findNearbyBooks(userId: string, blockedUserIds: string[] =
     const nearbyIds = filtered.map((u) => u.id)
     const { data } = await supabase
         .from("listings")
-        .select("id, user_id, books(work_id, title, cover_url, author_name)")
+        .select("id, user_id, books(work_id, title, open_library_image, google_image, author_name)")
         .in("user_id", nearbyIds)
         .neq("status", "sold")
 
     return (data ?? []).flatMap((row: any) => {
         const book = row.books
         if (!book) return []
-        return [{ listingId: row.id, work_id: book.work_id, title: book.title, cover_url: book.cover_url, author_name: book.author_name, userId: row.user_id, userName: nameMap.get(row.user_id) ?? null, distanceKm: distanceMap.get(row.user_id) ?? 0 }]
+        return [{ listingId: row.id, work_id: book.work_id, title: book.title, open_library_image: book.open_library_image, google_image: book.google_image, author_name: book.author_name, userId: row.user_id, userName: nameMap.get(row.user_id) ?? null, distanceKm: distanceMap.get(row.user_id) ?? 0 }]
     })
 }
 
@@ -72,14 +73,14 @@ export async function findNearbyBooksForGuest(lat: number, lng: number, blockedU
 
     const { data } = await supabase
         .from("listings")
-        .select("id, user_id, books(work_id, title, cover_url, author_name)")
+        .select("id, user_id, books(work_id, title, open_library_image, google_image, author_name)")
         .in("user_id", nearbyIds)
         .neq("status", "sold")
 
     return (data ?? []).flatMap((row: any) => {
         const book = row.books
         if (!book) return []
-        return [{ listingId: row.id, work_id: book.work_id, title: book.title, cover_url: book.cover_url, author_name: book.author_name, userId: row.user_id, userName: nameMap.get(row.user_id) ?? null, distanceKm: distanceMap.get(row.user_id) ?? 0 }]
+        return [{ listingId: row.id, work_id: book.work_id, title: book.title, open_library_image: book.open_library_image, google_image: book.google_image, author_name: book.author_name, userId: row.user_id, userName: nameMap.get(row.user_id) ?? null, distanceKm: distanceMap.get(row.user_id) ?? 0 }]
     })
 }
 

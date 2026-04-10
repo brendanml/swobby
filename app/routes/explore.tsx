@@ -10,6 +10,7 @@ import { Page } from "~/components/page"
 import { BookCard } from "~/components/book/card"
 import { SwapCard } from "~/components/swap/card"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { bookImage } from "~/lib/book-image"
 import { Button } from "~/components/ui/button"
 import { Spinner } from "~/components/ui/spinner"
 import { useIsMobile } from "~/hooks/use-mobile"
@@ -145,7 +146,7 @@ export default function Explore() {
                                     <BookCard
                                         key={`${book.work_id}-${book.userId}`}
                                         title={book.title}
-                                        coverUrl={book.cover_url}
+                                        coverUrl={bookImage(book)}
                                         href={`/listings/${book.listingId}`}
                                         owner={book.userName ?? "Unknown"}
                                         distance={`${Math.round(book.distanceKm)} km away`}
