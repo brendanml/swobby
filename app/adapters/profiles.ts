@@ -31,7 +31,7 @@ export async function updateProfile(supabase: SupabaseClient, userId: string, da
     name?: string | null
     lat?: number | null
     lng?: number | null
-    h3_index?: string | null
+    h3_r6?: string | null
     distance_preference?: number | null
     genres?: string[]
     onboarding_complete?: boolean

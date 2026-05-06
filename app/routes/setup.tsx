@@ -70,7 +70,7 @@ export default function SetupPage() {
                 name: name.trim() || null,
                 lat,
                 lng,
-                h3_index: latLngToH3(lat, lng),
+                h3_r6: latLngToH3(lat, lng),
                 genres,
                 onboarding_complete: true,
             }),

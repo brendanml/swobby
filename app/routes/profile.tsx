@@ -73,7 +73,7 @@ export default function Profile() {
                 name: formData.get("name") as string | null,
                 lat: latVal,
                 lng: lngVal,
-                h3_index: latVal && lngVal ? latLngToH3(latVal, lngVal) : null,
+                h3_r6: latVal && lngVal ? latLngToH3(latVal, lngVal) : null,
                 distance_preference: Number(formData.get("distance_preference")) || null,
             }),
             upsertUserSettings(supabase, user.id, {
